@@ -7,7 +7,7 @@
 Apple の **Liquid Glass** を Web 上で**物理ベース・リアルタイム**に再現します——
 曲面ベゼルでの本物のスネル屈折、スペクトル分散、フレネル反射、背景色を拾うスペキュラ、液体のような融合、ライト／ダーク適応。純粋な WebGL2、依存関係ゼロ。
 
-**[▶ ライブデモ](https://the-best-liquid-glass.pages.dev)** · [デモ動画](docs/media/demo.mp4) · [自分のサイトで使う](#自分のサイトで使う) · [AI スキル](#ai-スキル)
+**[▶ ライブデモ](https://glass.f2b7i.my)** · [デモ動画](docs/media/demo.mp4) · [自分のサイトで使う](#自分のサイトで使う) · [AI スキル](#ai-スキル)
 
 [![デモ動画](docs/media/poster.jpg)](docs/media/demo.mp4)
 

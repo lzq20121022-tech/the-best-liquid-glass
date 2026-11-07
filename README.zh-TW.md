@@ -7,7 +7,7 @@
 在網頁上**基於物理、即時**重現 Apple 的 **Liquid Glass（液態玻璃）**——
 弧面上的真實司乃耳折射、光譜色散、Fresnel 反射、取色高光、液體融合、明暗自適應。純 WebGL2，零依賴。
 
-**[▶ 線上展示](https://the-best-liquid-glass.pages.dev)** · [展示影片](docs/media/demo.mp4) · [用在你的網站](#用在你的網站) · [AI Skill](#ai-skill讓-ai-直接幫你套用)
+**[▶ 線上展示](https://glass.f2b7i.my)** · [展示影片](docs/media/demo.mp4) · [用在你的網站](#用在你的網站) · [AI Skill](#ai-skill讓-ai-直接幫你套用)
 
 [![展示影片](docs/media/poster.jpg)](docs/media/demo.mp4)
 

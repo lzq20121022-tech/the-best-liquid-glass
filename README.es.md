@@ -8,7 +8,7 @@ Una recreación **física y en tiempo real** del **Liquid Glass** de Apple para 
 refracción de Snell real sobre un bisel curvo, dispersión espectral, reflexión de Fresnel, brillo especular teñido por el contenido,
 fusión líquida y adaptación claro/oscuro. WebGL2 puro, sin dependencias.
 
-**[▶ Demo en vivo](https://the-best-liquid-glass.pages.dev)** · [Vídeo](docs/media/demo.mp4) · [Úsalo en tu web](#úsalo-en-tu-web) · [Skill para IA](#skill-para-ia)
+**[▶ Demo en vivo](https://glass.f2b7i.my)** · [Vídeo](docs/media/demo.mp4) · [Úsalo en tu web](#úsalo-en-tu-web) · [Skill para IA](#skill-para-ia)
 
 [![Vídeo de demostración](docs/media/poster.jpg)](docs/media/demo.mp4)
 

@@ -7,7 +7,7 @@
 在网页上**基于物理、实时**还原苹果 **Liquid Glass（液态玻璃）**——
 弧面上的真实斯涅尔折射、光谱色散、Fresnel 反射、取色高光、液体融合、明暗自适应。纯 WebGL2，零依赖。
 
-**[▶ 在线演示](https://the-best-liquid-glass.pages.dev)** · [演示视频](docs/media/demo.mp4) · [用在你的网站上](#用在你的网站上) · [AI Skill](#ai-skill让-ai-直接帮你用上)
+**[▶ 在线演示](https://glass.f2b7i.my)** · [演示视频](docs/media/demo.mp4) · [用在你的网站上](#用在你的网站上) · [AI Skill](#ai-skill让-ai-直接帮你用上)
 
 [![演示视频](docs/media/poster.jpg)](docs/media/demo.mp4)
 
