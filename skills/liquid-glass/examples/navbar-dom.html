@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Liquid Glass · Navbar over live content (DOM engine)</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #fff; color: #111; font: 17px/1.65 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif; }
+  header { position: fixed; top: 14px; left: 50%; transform: translateX(-50%); z-index: 10; display: flex; align-items: center; gap: 18px; padding: 10px 12px 10px 20px; border-radius: 999px; width: min(720px, calc(100% - 28px)); }
+  header b { color: var(--lg-fg, #111); font-size: 16px; }
+  header nav { margin-left: auto; display: flex; gap: 2px; }
+  header nav a { color: var(--lg-fg, #111); text-decoration: none; padding: 8px 14px; border-radius: 999px; font-size: 15px; font-weight: 500; }
+  .fab { position: fixed; right: 22px; bottom: 22px; z-index: 10; width: 60px; height: 60px; border-radius: 50%; border: 0; font-size: 26px; color: var(--lg-fg, #111); cursor: pointer; }
+  .tabbar { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); z-index: 10; display: flex; gap: 6px; padding: 6px; border-radius: 999px; }
+  .tabbar button { border: 0; background: transparent; color: var(--lg-fg, #111); font: 600 13px/1 inherit; padding: 12px 18px; border-radius: 999px; cursor: pointer; }
+  main { max-width: 720px; margin: 0 auto; padding: 110px 20px 140px; }
+  h1 { font-size: 48px; line-height: 1.05; letter-spacing: -0.02em; margin: 0 0 14px; }
+  .img { height: 260px; border-radius: 22px; margin: 26px 0; }
+  .g1 { background: radial-gradient(circle at 30% 30%, #ffd36b, transparent 50%), radial-gradient(circle at 70% 60%, #ff4f8b, transparent 55%), linear-gradient(135deg, #4b2bd6, #00c2ff); }
+  .g2 { background: repeating-linear-gradient(90deg, #111 0 6px, #fff 6px 12px); }
+  .g3 { background: conic-gradient(from 30deg, #ff3b30, #ff9500, #ffcc00, #34c759, #00c7be, #0a84ff, #5856d6, #ff3b30); }
+  .dark { background: #0b0b0f; color: #f2f2f7; border-radius: 24px; padding: 28px; margin: 30px 0; }
+  .note { font-size: 14px; color: #6e6e73; }
+</style>
+</head>
+<body>
+<header><b>Liquid Glass</b><nav><a href="#">Docs</a><a href="#">Examples</a><a href="#">GitHub</a></nav></header>
+<main>
+  <h1>Glass over live content</h1>
+  <p class="note">DOM engine: real refraction through SVG <code>backdrop-filter</code> in Chromium browsers; Safari and Firefox get a tuned frosted fallback automatically. Scroll and watch the header, the tab bar and the round button.</p>
+  <div class="img g1"></div>
+  <p>Liquid Glass behaves like a thick convex lens: light is bent and concentrated at the rim while the flat center stays clear. Text passing under the edge of the header bends along the outline instead of simply blurring away.</p>
+  <div class="img g2"></div>
+  <p>The displacement map is baked per element from the same physics as the WebGL renderer: a squircle height profile across the bevel and Snell’s law at every pixel. Three displaced channels with slightly different strengths create the chromatic fringe.</p>
+  <div class="dark"><h2>Dark section</h2><p>Glass that sits on dark content should switch to a dark appearance. In the DOM engine the tone comes from the page background, or you can pass <code>tone: 'dark'</code>.</p></div>
+  <div class="img g3"></div>
+  <p>Text, icons and controls inside the glass use <code>color: var(--lg-fg)</code>, which the library sets per element to keep them legible.</p>
+  <p>The quick brown fox jumps over the lazy dog. 0123456789. The quick brown fox jumps over the lazy dog. 0123456789. The quick brown fox jumps over the lazy dog. 0123456789.</p>
+  <div class="img g1"></div>
+  <div class="img g2"></div>
+  <p>End of page.</p>
+</main>
+<div class="tabbar"><button>Home</button><button>Search</button><button>Library</button></div>
+<button class="fab" aria-label="Add">+</button>
+
+<script src="../assets/liquid-glass.js"></script>
+<script>
+  const lg = LiquidGlass.create({ engine: 'dom', params: { frost: 1, disp: 0.08 } });
+  lg.add('header', { role: 'navbar', surface: 'text' })
+    .add('.tabbar', { role: 'tabbar', surface: 'text' })
+    .add('.fab', { role: 'button', bezel: 30, thickness: 30 });
+  console.log('liquid-glass engine:', lg.engine);
+</script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Liquid Glass · recommend() playground</title>
+<style>
+  body { margin: 0; background: #0e0e10; color: #ececf1; font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  main { max-width: 980px; margin: 0 auto; padding: 32px 20px; display: grid; grid-template-columns: 320px 1fr; gap: 28px; }
+  h1 { grid-column: 1 / -1; margin: 0; font-size: 26px; }
+  label { display: grid; gap: 4px; margin-bottom: 12px; color: #a1a1aa; }
+  select, input[type=range] { width: 100%; }
+  select { height: 30px; background: #18181b; color: #fff; border: 1px solid #333; border-radius: 6px; }
+  pre { margin: 0; background: #18181b; border: 1px solid #27272a; border-radius: 12px; padding: 16px; overflow: auto; font: 13px/1.55 ui-monospace, Menlo, Consolas, monospace; }
+  .preview { position: relative; height: 300px; border-radius: 16px; overflow: hidden; margin-top: 16px; }
+  .preview canvas.bgsrc { display: none; }
+  .glass { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: grid; place-items: center; color: var(--lg-fg, #fff); font-weight: 600; }
+  @media (max-width: 760px) { main { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>recommend(scene) → parameters</h1>
+  <div>
+    <label>Surface behind the glass
+      <select id="surface"><option>photo</option><option>video</option><option>gradient</option><option>text</option><option>ui</option><option>solid</option></select></label>
+    <label>Role <select id="role"><option>auto</option><option>button</option><option>navbar</option><option>tabbar</option><option>card</option><option>panel</option><option>lens</option></select></label>
+    <label>Brightness <input id="brightness" type="range" min="0" max="1" step="0.01" value="0.35"></label>
+    <label>Busyness <input id="busyness" type="range" min="0" max="1" step="0.01" value="0.6"></label>
+    <label>Emphasis <select id="emphasis"><option>normal</option><option>subtle</option><option>showcase</option></select></label>
+    <label>Width <input id="w" type="range" min="40" max="700" step="1" value="380"></label>
+    <label>Height <input id="h" type="range" min="40" max="400" step="1" value="62"></label>
+  </div>
+  <div>
+    <pre id="out"></pre>
+    <div class="preview" id="pv"><canvas class="bgsrc" id="src" width="900" height="300"></canvas><div class="glass" id="g">Glass</div></div>
+  </div>
+</main>
+<script src="../assets/liquid-glass.js"></script>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const src = $('src'), x = src.getContext('2d');
+  function paint() {
+    const s = $('surface').value, b = +$('brightness').value;
+    x.clearRect(0, 0, 900, 300);
+    const base = Math.round(b * 255);
+    x.fillStyle = `rgb(${base},${base},${base})`; x.fillRect(0, 0, 900, 300);
+    if (s === 'photo' || s === 'video' || s === 'gradient') {
+      const g = x.createLinearGradient(0, 0, 900, 300);
+      g.addColorStop(0, `hsl(260,80%,${b * 70 + 10}%)`); g.addColorStop(0.5, `hsl(330,90%,${b * 60 + 15}%)`); g.addColorStop(1, `hsl(30,95%,${b * 60 + 20}%)`);
+      x.fillStyle = g; x.fillRect(0, 0, 900, 300);
+      if (s !== 'gradient') for (let i = 0; i < 40 * +$('busyness').value; i++) { x.fillStyle = `hsla(${i * 37},90%,60%,.7)`; x.beginPath(); x.arc((i * 97) % 900, (i * 53) % 300, 10 + (i % 5) * 8, 0, 7); x.fill(); }
+    } else if (s === 'text' || s === 'ui') {
+      x.fillStyle = b > 0.5 ? '#111' : '#eee'; x.font = '600 18px system-ui';
+      for (let y = 26; y < 300; y += 28 - 10 * +$('busyness').value) x.fillText('The quick brown fox jumps over the lazy dog 0123456789 · Liquid Glass', 10, y);
+    }
+  }
+  let lg = null;
+  function update() {
+    paint();
+    const scene = { surface: $('surface').value, role: $('role').value, brightness: +$('brightness').value, busyness: +$('busyness').value, emphasis: $('emphasis').value, size: { w: +$('w').value, h: +$('h').value } };
+    const rec = LiquidGlass.recommend(scene);
+    $('out').textContent = 'LiquidGlass.recommend(' + JSON.stringify(scene, null, 1).replace(/\n\s*/g, ' ') + ')\n\n' + JSON.stringify(rec, null, 2);
+    const g = $('g');
+    g.style.width = scene.size.w + 'px'; g.style.height = scene.size.h + 'px';
+    g.style.borderRadius = Math.min(scene.size.w, scene.size.h) * (rec.role === 'button' || rec.role === 'navbar' || rec.role === 'lens' ? 0.5 : 0.18) + 'px';
+    if (lg) lg.destroy();
+    lg = LiquidGlass.create({ background: src, container: $('pv'), params: Object.assign({}, rec.params), liveBackground: false });
+    lg.add(g, { zoom: rec.params.zoom });
+  }
+  document.querySelectorAll('select, input').forEach((e) => e.addEventListener('input', update));
+  update();
+</script>
+</body>
+</html>

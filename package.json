@@ -1,0 +1,18 @@
+{
+  "name": "the-best-liquid-glass",
+  "version": "1.0.0",
+  "description": "A physically based, real-time recreation of Apple's Liquid Glass for the web — Snell refraction, spectral dispersion, Fresnel, specular rim light and liquid merging in WebGL2.",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "build": "node tools/build-lib.mjs",
+    "serve": "python -m http.server 5178",
+    "record": "node tools/record.mjs",
+    "assets": "node tools/make-assets.mjs",
+    "site": "node tools/build-site.mjs",
+    "deploy": "node tools/build-site.mjs && wrangler pages deploy .site --project-name the-best-liquid-glass --branch main"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^24.0.0"
+  }
+}

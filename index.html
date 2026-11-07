@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#000000">
+<meta name="description" content="The Best Liquid Glass — a physically based, real-time recreation of Apple's Liquid Glass in WebGL2: Snell refraction, spectral dispersion, Fresnel, specular rim light, liquid merging.">
+<title>The Best Liquid Glass</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <main id="stage">
+    <canvas id="gl"></canvas>
+    <div id="hud"><span id="fps">-- fps</span><span id="res"></span></div>
+    <div id="hint"
+      data-zh="拖动玻璃 · 靠近即融合 · 双击透镜变形 · 按住标签栏左右滑 · 滚轮/拖背景滚动 · 按住空格对比"
+      data-en="Drag the glass · push droplets together · double-click the lens · press &amp; slide the tab bar · scroll · hold Space to compare">
+      Drag the glass · push droplets together · double-click the lens · press &amp; slide the tab bar · scroll · hold Space to compare</div>
+    <div id="caption"></div>
+    <div id="toast"></div>
+    <div id="dropzone"><span data-zh="松开以加载图片 / 视频" data-en="Drop to load an image / video">Drop to load an image / video</span></div>
+    <div id="err" hidden></div>
+  </main>
+  <aside id="panel">
+    <header>
+      <div class="title"><span data-zh="液态玻璃实验室" data-en="The Best Liquid Glass">The Best Liquid Glass</span><small data-zh="WebGL2 · 斯涅尔折射 · 光谱色散" data-en="WebGL2 · Snell refraction · spectral dispersion">WebGL2 · Snell refraction · spectral dispersion</small></div>
+      <div class="hdr-btns">
+        <div class="lang" role="group" aria-label="Language">
+          <button data-lang="en">EN</button><button data-lang="zh">中文</button>
+        </div>
+        <button id="collapse" title="Hide panel (P)" aria-label="Hide panel">
+          <svg viewBox="0 0 24 24" width="16" height="16"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </header>
+    <div id="controls"></div>
+    <footer data-zh="按住 <kbd>空格</kbd> 对比普通毛玻璃 · <kbd>P</kbd> 面板 · <kbd>D</kbd> 调试视图 · 双击滑杆恢复默认"
+            data-en="Hold <kbd>Space</kbd> to compare with plain blur · <kbd>P</kbd> panel · <kbd>D</kbd> debug view · double-click a slider to reset">
+      Hold <kbd>Space</kbd> to compare with plain blur · <kbd>P</kbd> panel · <kbd>D</kbd> debug view · double-click a slider to reset</footer>
+  </aside>
+  <button id="openPanel" aria-label="Open panel">
+    <svg viewBox="0 0 24 24" width="16" height="16"><path d="M4 7h10M18 7h2M4 17h4M12 17h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="7" r="2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="10" cy="17" r="2" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+    <span data-zh="参数" data-en="Tune">Tune</span>
+  </button>
+</div>
+<input type="file" id="file" accept="image/*,video/*" hidden>
+<script src="js/i18n.js"></script>
+<script src="js/shaders.js"></script>
+<script src="js/content.js"></script>
+<script src="js/panel.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
