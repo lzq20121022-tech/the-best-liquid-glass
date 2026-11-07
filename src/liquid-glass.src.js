@@ -52,33 +52,36 @@
     base: 0,           // px, extra flat slab under the dome (sharper rim refraction)
     refr: 1.2,         // refraction multiplier (negative = concave look)
     profile: 0,        // 0 convex squircle, 1 convex circle, 2 lip
-    disp: 0.08,        // dispersion: IOR spread across the visible spectrum
-    dispN: 7,          // spectral samples (1 = off)
-    frost: 1.5,        // px, backdrop blur sigma
+    disp: 0.16,        // dispersion: IOR spread across the visible spectrum
+    dispN: 10,         // spectral samples (1 = off)
+    frost: 0.5,        // px, backdrop blur sigma (Apple's glass is mostly clear)
     sat: 1.35,         // vibrancy (saturation of what is behind)
     bright: 1.04,
     tint: '#ffffff', tintA: 0,
     lightAngle: -135,  // degrees, screen space (−135 = light from top-left)
-    rimI: 0.85, rimW: 2.2, rimFar: 0.6,
-    glareI: 0.9, glareR: 14, glareConv: 2.2, glareFar: 0.55,
+    rimI: 0.8, rimW: 1.3, rimFar: 0.6,
+    glareI: 0.55, glareR: 9, glareConv: 2.6, glareFar: 0.55,
     fresnel: 0.5,
     shadowA: 0.22, shadowR: 24, shadowY: 8,
     contact: 1.2,      // shadow under the glass refracted into the rim (grey inner ring on light backgrounds)
+    noInvert: true,    // keep samples on their side of the medial axis (bars); false = real-glass inversion (Siri-style droplets)
     mergeK: 0,         // px, liquid merge distance for elements in the same group
     cornerN: 3.25,     // superellipse exponent of corners (≈3.25 ≈ iOS continuous corners)
     adapt: 1,          // light/dark adaptivity strength
-    veil: 0.06,        // adaptive veil amount
+    veil: 0.035,       // adaptive veil amount
     zoom: 1,           // center magnification
     interactive: true, // press = energize + glow
     maxDpr: 2,
   };
   const PRESETS = {
-    regular: {},
-    clear: { frost: 0, veil: 0.02, sat: 1.15, disp: 0.1, dispN: 8, refr: 1.3 },
+    default: {},                                   // clear + prism (the look most people mean by Liquid Glass)
+    regular: { frost: 9, veil: 0.32, sat: 1.45, disp: 0.04, dispN: 5, refr: 0.9, contact: 1.5, shadowA: 0.12 },   // Apple HIG Regular: blur + luminosity
+    clear: { frost: 3, veil: 0.08, adapt: 0, bright: 1.06, sat: 1.15, disp: 0.1, dispN: 9 },                      // Apple HIG Clear: translucent, moderate blur
     thick: { frost: 12, veil: 0.14, sat: 1.5, thickness: 54, bezel: 36, refr: 1.25, disp: 0.06, shadowA: 0.28 },
-    prism: { frost: 0, veil: 0.02, disp: 0.3, dispN: 12, refr: 1.6, thickness: 52, bezel: 34, ior: 1.6, glareI: 0.7 },
+    prism: { frost: 0, veil: 0.01, disp: 0.36, dispN: 16, refr: 1.6, thickness: 52, bezel: 34, ior: 1.6, glareI: 0.7 },
     subtle: { frost: 5, refr: 0.7, disp: 0.03, dispN: 3, rimI: 0.45, glareI: 0.4, shadowA: 0.14, contact: 0.6 },
     tinted: { frost: 5, tint: '#0a84ff', tintA: 0.3, veil: 0.04 },
+    crystal: { frost: 0, veil: 0, sat: 1.1, disp: 0.14, dispN: 16, refr: 1.3, thickness: 90, bezel: 70, profile: 1, noInvert: false, zoom: 1.25, lightAngle: -100, rimI: 0.9, glareI: 0.9, glareR: 18, glareFar: 1.2, fresnel: 0.6 },
   };
 
   /* ------------------------------------------------------------------ *
@@ -98,47 +101,48 @@
     const half = Math.min(w, h) / 2;
     // 1) role → geometry & material weight
     if (role === 'button' || role === 'toggle' || role === 'badge') {
-      Object.assign(p, { bezel: Math.min(half, 22), thickness: Math.min(half, 22) * 1.4, frost: 1, rimI: 0.85, glareI: 0.9, shadowA: 0.2, shadowR: 16, shadowY: 5 });
+      Object.assign(p, { bezel: Math.min(half, 22), thickness: Math.min(half, 22) * 1.4, frost: 0, rimI: 0.8, glareI: 0.55, shadowA: 0.2, shadowR: 16, shadowY: 5 });
     } else if (role === 'navbar' || role === 'tabbar' || role === 'toolbar') {
-      Object.assign(p, { bezel: Math.min(half * 0.95, 30), thickness: 44, frost: 2, rimI: 0.85, glareI: 0.9, shadowA: 0.22 });
+      Object.assign(p, { bezel: Math.min(half * 0.95, 30), thickness: 44, frost: 0.6, rimI: 0.8, glareI: 0.55, shadowA: 0.22 });
     } else if (role === 'lens' || role === 'magnifier') {
-      Object.assign(p, { bezel: Math.min(half * 0.7, 40), thickness: 54, frost: 0, refr: 1.4, disp: 0.12, dispN: 9, zoom: 1.18, veil: 0.02, rimI: 0.9, glareI: 0.9 });
+      Object.assign(p, { bezel: Math.min(half * 0.7, 40), thickness: 54, frost: 0, refr: 1.4, disp: 0.18, dispN: 12, zoom: 1.18, veil: 0, rimI: 0.9, glareI: 0.7 });
     } else if (role === 'panel' || role === 'sheet' || role === 'sidebar' || role === 'menu') {
-      Object.assign(p, { bezel: Math.min(half * 0.5, 34), thickness: 48, frost: 9, veil: 0.12, sat: 1.45, shadowA: 0.28, shadowR: 36, shadowY: 12, glareR: 16 });
+      Object.assign(p, { bezel: Math.min(half * 0.5, 34), thickness: 48, frost: 3, veil: 0.07, sat: 1.45, shadowA: 0.28, shadowR: 36, shadowY: 12, glareR: 16 });
     } else { // card
-      Object.assign(p, { bezel: Math.min(half * 0.6, 32), thickness: 46, frost: 4, veil: 0.08, shadowA: 0.24, shadowR: 28, shadowY: 10 });
+      Object.assign(p, { bezel: Math.min(half * 0.6, 32), thickness: 46, frost: 1, veil: 0.05, shadowA: 0.24, shadowR: 28, shadowY: 10 });
     }
     const hasText = d.hasText !== null ? d.hasText : role !== 'lens';
     // 2) what is behind
     const s = d.surface;
     if (s === 'photo' || s === 'video' || s === 'gradient' || s === 'map' || s === '3d') {
       // Clear material: keep the lensing visible, add only the frost legibility requires.
-      p.frost = role === 'lens' ? 0 : hasText ? Math.max(0, (p.frost || 0) * 0.5 + d.busyness * 3) : (p.frost || 0) * 0.25;
-      p.veil = Math.min(p.veil == null ? 0.1 : p.veil, 0.06 + (hasText ? d.busyness * 0.08 : 0));
-      p.disp = p.disp == null ? 0.1 : p.disp;
+      p.frost = role === 'lens' ? 0 : hasText ? Math.max(0, (p.frost || 0) * 0.5 + d.busyness * 1.2) : (p.frost || 0) * 0.25;
+      p.veil = Math.min(p.veil == null ? 0.05 : p.veil, 0.035 + (hasText ? d.busyness * 0.05 : 0));
+      p.disp = p.disp == null ? 0.18 : p.disp;
+      p.dispN = p.dispN == null ? 10 : p.dispN;
       p.sat = p.sat == null ? 1.2 : p.sat;
       if (s === 'video' || d.motion === 'video') p.frost = Math.min(p.frost, 4);
     } else if (s === 'text' || s === 'ui' || s === 'list') {
       // Busy high-frequency content: Regular material, calmer fringes.
-      p.frost = Math.max(p.frost || 0, role === 'lens' ? 0 : 1.5 + d.busyness * 2.5);
-      p.disp = role === 'lens' ? 0.08 : 0.05;
-      p.dispN = role === 'lens' ? 7 : 5;
-      p.veil = Math.max(p.veil == null ? 0.1 : p.veil, 0.1);
+      p.frost = Math.max(p.frost || 0, role === 'lens' ? 0 : 0.6 + d.busyness * 1.4);
+      p.disp = role === 'lens' ? 0.18 : 0.12;
+      p.dispN = role === 'lens' ? 12 : 9;
+      p.veil = Math.max(p.veil == null ? 0.05 : p.veil, 0.05);
     } else if (s === 'solid' || s === 'flat') {
       // Nothing to refract: definition must come from rim light and shadow.
-      p.rimI = 0.95; p.glareI = 0.95; p.shadowA = Math.max(p.shadowA || 0.2, 0.28); p.disp = 0.02; p.dispN = 3;
+      p.rimI = 0.95; p.glareI = 0.7; p.shadowA = Math.max(p.shadowA || 0.2, 0.28); p.disp = 0.12; p.dispN = 9;
       p.frost = Math.min(p.frost || 0, 4); p.fresnel = 0.6; p.contact = 1.6;
     }
     // 3) brightness → appearance
     const b = d.brightness;
     const tone = b > 0.58 ? 'light' : b < 0.42 ? 'dark' : (d.theme === 'dark' ? 'dark' : 'light');
-    if (tone === 'dark') { p.rimI = Math.max(p.rimI || 0.85, 0.9); p.glareI = Math.max(p.glareI || 0.9, 0.95); p.shadowA = Math.min(p.shadowA || 0.22, 0.3) + 0.05; }
+    if (tone === 'dark') { p.rimI = Math.max(p.rimI || 0.8, 0.88); p.glareI = Math.max(p.glareI || 0.55, 0.65); p.shadowA = Math.min(p.shadowA || 0.22, 0.3) + 0.05; }
     else { p.shadowA = (p.shadowA || 0.22) + 0.03; }
     // 4) emphasis
-    if (d.emphasis === 'showcase') { p.disp = Math.max(p.disp || 0.08, 0.18); p.dispN = 10; p.refr = Math.max(p.refr || 1, 1.3); p.frost = Math.min(p.frost || 0, 2); }
-    else if (d.emphasis === 'subtle') { p.disp = Math.min(p.disp == null ? 0.08 : p.disp, 0.04); p.refr = Math.min(p.refr || 1, 0.8); p.rimI = Math.min(p.rimI || 0.55, 0.45); }
+    if (d.emphasis === 'showcase') { p.disp = Math.max(p.disp || 0.16, 0.28); p.dispN = 14; p.refr = Math.max(p.refr || 1, 1.3); p.frost = Math.min(p.frost || 0, 2); }
+    else if (d.emphasis === 'subtle') { p.disp = Math.min(p.disp == null ? 0.16 : p.disp, 0.07); p.refr = Math.min(p.refr || 1, 0.8); p.rimI = Math.min(p.rimI || 0.55, 0.45); }
     // 5) motion / perf
-    if (d.motion === 'scrolling' || d.motion === 'video') p.dispN = Math.min(p.dispN || 7, 7);
+    if (d.motion === 'scrolling' || d.motion === 'video') p.dispN = Math.min(p.dispN || 10, 9);
     p.frost = Math.round(p.frost * 2) / 2;
     for (const key in p) if (typeof p[key] === 'number') p[key] = Math.round(p[key] * 1000) / 1000;
     return { params: p, tone, role, material: (p.frost || 0) <= 1.5 ? 'clear' : 'regular' };
@@ -879,6 +883,7 @@
       gl.uniform1f(u.u_glareI, P.glareI); gl.uniform1f(u.u_glareR, P.glareR * k); gl.uniform1f(u.u_glareConv, P.glareConv); gl.uniform1f(u.u_glareFar, P.glareFar);
       gl.uniform1f(u.u_fresnel, P.fresnel);
       gl.uniform1f(u.u_contact, P.contact);
+      gl.uniform1f(u.u_noInvert, P.noInvert ? 1 : 0);
       gl.uniform1f(u.u_shA, P.shadowA); gl.uniform1f(u.u_shR, P.shadowR * k); gl.uniform2f(u.u_shOff, 0, P.shadowY * k);
       gl.uniform1f(u.u_sat, P.sat); gl.uniform1f(u.u_bright, P.bright); gl.uniform1f(u.u_veil, P.veil); gl.uniform1f(u.u_adaptI, P.adapt);
       gl.uniform4f(u.u_glow, this.glow0.x * k, this.glow0.y * k, 70 * k, clamp(this.glow0.a.v, 0, 1.2) * 0.8);
@@ -1004,7 +1009,7 @@
         const depth = hgt * T + P.base;
         let ox = (rx / Math.max(-rz, 0.06)) * depth * P.refr, oy = (ry / Math.max(-rz, 0.06)) * depth * P.refr;
         const dl = Math.hypot(ox, oy), lim = Math.max(minHalf - dIn, 0) * 0.9 + 0.5;
-        if (dl > lim) { ox *= lim / dl; oy *= lim / dl; } // never cross the medial axis (no rod-like inversion)
+        if (P.noInvert && dl > lim) { ox *= lim / dl; oy *= lim / dl; } // optional: no rod-like inversion
         const i = y * W + x;
         dx[i] = ox; dy[i] = oy;
         maxD = Math.max(maxD, Math.abs(ox), Math.abs(oy));
@@ -1121,7 +1126,7 @@
         return;
       }
       const r = it.o.radius != null ? it.o.radius : parseRadius(el, w, h);
-      const key = [Math.round(w), Math.round(h), Math.round(r), P.ior, P.thickness, P.bezel, P.base, P.refr, P.profile, P.lightAngle, P.rimI, P.rimW, P.glareI, P.glareR, P.cornerN, P.fresnel, P.contact, P.shadowR, P.shadowA].join('|');
+      const key = [Math.round(w), Math.round(h), Math.round(r), P.ior, P.thickness, P.bezel, P.base, P.refr, P.profile, P.lightAngle, P.rimI, P.rimW, P.glareI, P.glareR, P.cornerN, P.fresnel, P.contact, P.shadowR, P.shadowA, P.noInvert].join('|');
       if (it.key !== key) {
         it.key = key;
         it.maps = bakeMaps(w, h, r, P);

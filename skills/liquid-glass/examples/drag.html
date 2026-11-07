@@ -103,11 +103,11 @@
 
   const lg = LiquidGlass.create({ background: bg, container: stage, liveBackground: false, params: { mergeK: 54 } });
 
-  lg.add('.card', { draggable: { bounds: 'parent', inertia: true }, frost: 4 });
+  lg.add('.card', { draggable: { bounds: 'parent', inertia: true } });
   lg.add('.blob', { draggable: { snapBack: true, bounds: null }, group: 1, frost: 0, zoom: 1.06 });
   const travel = 184 + 12 - 80;  // track + overhang − knob
   lg.add('.knob', { draggable: { axis: 'x', bounds: 'parent', snap: [{ x: 0, y: 0 }, { x: travel, y: 0 }] }, frost: 0, zoom: 1.12 });
-  lg.tabbar('.tabs', { selected: 0, glass: { frost: 5, veil: 0.14 }, onChange: (i) => say('Tab · ' + document.querySelectorAll('.tabs button')[i].textContent) });
+  lg.tabbar('.tabs', { selected: 0, glass: { frost: 1, veil: 0.06 }, onChange: (i) => say('Tab · ' + document.querySelectorAll('.tabs button')[i].textContent) });
 
   const status = document.getElementById('status');
   let t = 0;

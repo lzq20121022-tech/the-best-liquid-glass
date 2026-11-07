@@ -67,23 +67,25 @@
   const DEF = {
     scene: 'article', dark: false, autoScroll: false, edgeFx: true,
     ior: 1.5, thickness: 44, bezel: 30, base: 0, refr: 1.2, profile: 0, lensZoom: 1.0,
-    disp: 0.08, dispN: 7,
-    frost: 1.5, frostPanel: 8, sat: 1.35, bright: 1.04, tintColor: '#0a84ff', tintA: 0,
+    disp: 0.16, dispN: 10,
+    frost: 0.5, frostPanel: 3, sat: 1.35, bright: 1.04, tintColor: '#0a84ff', tintA: 0,
     lightMode: 'fixed', lightAngle: -135,
-    rimI: 0.85, rimW: 2.2, rimFar: 0.6, glareI: 0.9, glareR: 14, glareConv: 2.2, glareFar: 0.55, fresnel: 0.5,
-    shadowA: 0.22, shadowR: 24, shadowY: 8, contact: 1.2,
+    rimI: 0.8, rimW: 1.3, rimFar: 0.6, glareI: 0.55, glareR: 9, glareConv: 2.6, glareFar: 0.55, fresnel: 0.5,
+    shadowA: 0.22, shadowR: 24, shadowY: 8, contact: 1.2, noInvert: true,
     mergeK: 40, cornerN: 3.25,
-    adapt: 1.0, veil: 0.06,
+    adapt: 1.0, veil: 0.035,
     lazy: false, debug: 0, renderScale: 1, dprCap: 2,
   };
   const NON_OPTICAL = ['scene', 'dark', 'autoScroll', 'edgeFx', 'lightMode', 'renderScale', 'dprCap', 'debug'];
   const tr = LG.t;
   const PRESETS = {
-    regular: { label: tr('常规 Regular', 'Regular'), v: {} },
-    clear: { label: tr('清透 Clear', 'Clear'), v: { frost: 0, frostPanel: 4, veil: 0.02, sat: 1.15, disp: 0.1, dispN: 8, refr: 1.3 } },
+    default: { label: tr('清透棱镜（默认）', 'Clear prism (default)'), v: {} },
+    regular: { label: tr('苹果 Regular', 'Apple Regular'), v: { frost: 9, frostPanel: 16, veil: 0.32, sat: 1.45, disp: 0.04, dispN: 5, refr: 0.9, contact: 1.5, shadowA: 0.12 } },
+    clear: { label: tr('苹果 Clear', 'Apple Clear'), v: { frost: 3, frostPanel: 5, veil: 0.08, adapt: 0, bright: 1.06, sat: 1.15, disp: 0.1, dispN: 9 } },
     thick: { label: tr('厚磨砂', 'Thick frosted'), v: { frost: 12, frostPanel: 24, veil: 0.14, sat: 1.5, thickness: 54, bezel: 36, refr: 1.25, disp: 0.06, shadowA: 0.28 } },
-    prism: { label: tr('棱镜色散', 'Prism'), v: { frost: 0, frostPanel: 4, veil: 0.02, disp: 0.3, dispN: 12, refr: 1.6, thickness: 52, bezel: 34, ior: 1.6, glareI: 0.7 } },
+    prism: { label: tr('棱镜色散', 'Prism'), v: { frost: 0, frostPanel: 1, veil: 0.01, disp: 0.36, dispN: 16, refr: 1.6, thickness: 52, bezel: 34, ior: 1.6, glareI: 0.7 } },
     tinted: { label: tr('彩色着色', 'Tinted'), v: { frost: 5, tintColor: '#0a84ff', tintA: 0.3, veil: 0.04 } },
+    crystal: { label: tr('晶体 Siri 水滴', 'Crystal (Siri)'), v: { frost: 0, frostPanel: 0, veil: 0, sat: 1.1, disp: 0.14, dispN: 16, refr: 1.3, thickness: 90, bezel: 70, profile: 1, noInvert: false, lensZoom: 1.25, lightAngle: -100, rimI: 0.9, glareI: 0.9, glareR: 18, glareFar: 1.2, fresnel: 0.6 } },
     lazy: { label: tr('普通 AI 毛玻璃', 'Typical "AI glass"'), v: { lazy: true } },
   };
   const P = Object.assign({}, DEF);
@@ -107,16 +109,17 @@
       { type: 'range', key: 'bezel', label: tr('弧面宽度', 'Bezel width'), min: 4, max: 70, step: 1, def: 30, fmt: px },
       { type: 'range', key: 'base', label: tr('底座厚度', 'Base slab'), min: 0, max: 30, step: 0.5, def: 0, fmt: px },
       { type: 'range', key: 'refr', label: tr('折射倍数', 'Refraction ×'), min: -2, max: 3, step: 0.01, def: 1.2, tip: tr('负值 = 反向（凹透镜式，边缘显示外侧内容）', 'Negative = concave-like, rim shows outside content') },
+      { type: 'check', key: 'noInvert', label: tr('防止倒像（UI 栏）', 'No inversion (UI bars)') },
       { type: 'select', key: 'profile', label: tr('表面曲线', 'Surface'), options: [[0, tr('凸面 Squircle', 'Convex squircle')], [1, tr('凸面圆弧', 'Convex circle')], [2, tr('唇边 Lip', 'Lip')]] },
       { type: 'range', key: 'lensZoom', label: tr('透镜放大', 'Lens zoom'), min: 0.6, max: 2, step: 0.01, def: 1, fmt: (v) => (+v).toFixed(2) + '×' },
     ] },
     { title: tr('色散 · Dispersion', 'Dispersion'), note: tr('把可见光拆成多个波长，每个波长用各自的折射率折射后再合成。', 'Visible light is split into wavelengths; each is refracted with its own IOR and recombined.'), items: [
-      { type: 'range', key: 'disp', label: tr('色散强度', 'Dispersion'), min: 0, max: 0.5, step: 0.005, def: 0.08 },
-      { type: 'range', key: 'dispN', label: tr('光谱采样', 'Spectral taps'), min: 1, max: 16, step: 1, def: 7, fmt: (v) => (v <= 1 ? tr('关', 'off') : String(v)) },
+      { type: 'range', key: 'disp', label: tr('色散强度', 'Dispersion'), min: 0, max: 0.5, step: 0.005, def: 0.16 },
+      { type: 'range', key: 'dispN', label: tr('光谱采样', 'Spectral taps'), min: 1, max: 16, step: 1, def: 10, fmt: (v) => (v <= 1 ? tr('关', 'off') : String(v)) },
     ] },
     { title: tr('磨砂与色彩', 'Frost & color'), items: [
-      { type: 'range', key: 'frost', label: tr('控件磨砂', 'Control frost'), min: 0, max: 40, step: 0.5, def: 1.5, fmt: px },
-      { type: 'range', key: 'frostPanel', label: tr('面板磨砂', 'Panel frost'), min: 0, max: 60, step: 0.5, def: 8, fmt: px },
+      { type: 'range', key: 'frost', label: tr('控件磨砂', 'Control frost'), min: 0, max: 40, step: 0.5, def: 0.5, fmt: px },
+      { type: 'range', key: 'frostPanel', label: tr('面板磨砂', 'Panel frost'), min: 0, max: 60, step: 0.5, def: 3, fmt: px },
       { type: 'range', key: 'sat', label: tr('饱和度', 'Saturation'), min: 0, max: 2.5, step: 0.01, def: 1.35 },
       { type: 'range', key: 'bright', label: tr('亮度', 'Brightness'), min: 0.6, max: 1.4, step: 0.01, def: 1.04 },
       { type: 'color', key: 'tintColor', label: tr('着色颜色', 'Tint color') },
@@ -125,12 +128,12 @@
     { title: tr('高光 · Specular', 'Specular'), items: [
       { type: 'select', key: 'lightMode', label: tr('光源', 'Light'), options: [['fixed', tr('固定角度', 'Fixed angle')], ['mouse', tr('跟随鼠标', 'Follow mouse')], ['spin', tr('自动旋转', 'Auto rotate')], ['gyro', tr('陀螺仪（手机）', 'Gyroscope (phone)')]] },
       { type: 'range', key: 'lightAngle', label: tr('光源角度', 'Light angle'), min: -180, max: 180, step: 1, def: -135, fmt: (v) => v + '°' },
-      { type: 'range', key: 'rimI', label: tr('边缘亮线', 'Rim light'), min: 0, max: 1, step: 0.01, def: 0.85 },
-      { type: 'range', key: 'rimW', label: tr('亮线宽度', 'Rim width'), min: 0.3, max: 6, step: 0.1, def: 2.2, fmt: px },
+      { type: 'range', key: 'rimI', label: tr('边缘亮线', 'Rim light'), min: 0, max: 1, step: 0.01, def: 0.8 },
+      { type: 'range', key: 'rimW', label: tr('亮线宽度', 'Rim width'), min: 0.3, max: 6, step: 0.1, def: 1.3, fmt: px },
       { type: 'range', key: 'rimFar', label: tr('背光侧亮线', 'Far-side rim'), min: 0, max: 1.5, step: 0.01, def: 0.6 },
-      { type: 'range', key: 'glareI', label: tr('镜面眩光', 'Glare'), min: 0, max: 1.5, step: 0.01, def: 0.9 },
-      { type: 'range', key: 'glareR', label: tr('眩光范围', 'Glare range'), min: 1, max: 60, step: 0.5, def: 14, fmt: px },
-      { type: 'range', key: 'glareConv', label: tr('眩光集中度', 'Glare focus'), min: 0.3, max: 8, step: 0.1, def: 2.2 },
+      { type: 'range', key: 'glareI', label: tr('镜面眩光', 'Glare'), min: 0, max: 1.5, step: 0.01, def: 0.55 },
+      { type: 'range', key: 'glareR', label: tr('眩光范围', 'Glare range'), min: 1, max: 60, step: 0.5, def: 9, fmt: px },
+      { type: 'range', key: 'glareConv', label: tr('眩光集中度', 'Glare focus'), min: 0.3, max: 8, step: 0.1, def: 2.6 },
       { type: 'range', key: 'glareFar', label: tr('背光侧眩光', 'Far-side glare'), min: 0, max: 1.5, step: 0.01, def: 0.55 },
       { type: 'range', key: 'fresnel', label: 'Fresnel', min: 0, max: 1, step: 0.01, def: 0.5 },
     ] },
@@ -146,7 +149,7 @@
     ] },
     { title: tr('明暗自适应', 'Adaptivity'), items: [
       { type: 'range', key: 'adapt', label: tr('自适应强度', 'Adaptivity'), min: 0, max: 1, step: 0.01, def: 1 },
-      { type: 'range', key: 'veil', label: tr('薄纱浓度', 'Veil'), min: 0, max: 0.5, step: 0.01, def: 0.06 },
+      { type: 'range', key: 'veil', label: tr('薄纱浓度', 'Veil'), min: 0, max: 0.5, step: 0.01, def: 0.035 },
     ] },
     { title: tr('对照与调试', 'Compare & debug'), items: [
       { type: 'check', key: 'lazy', label: tr('对照：普通「AI 毛玻璃」', 'Compare: typical "AI glass" (blur + border)') },
@@ -266,7 +269,9 @@
   const texImg = makeTex();
 
   /* ------------------------------ 全局状态 ------------------------------ */
-  const S = { W: 1, H: 1, px: 1, cw: 1, ch: 1, time: 0, mouse: { x: 0, y: 0 }, lazyHold: false };
+  const S = { W: 1, H: 1, px: 1, cw: 1, ch: 1, time: 0, mouse: { x: 0, y: 0 }, lazyHold: false, hidden: new Set() };
+  // 录制模式下按组件隐藏玻璃（每段视频只展示要演示的那块）
+  const WIDGET_OF = { lens: 'lens', blob0: 'blobs', blob1: 'blobs', bar: 'bar', search: 'bar', drop: 'bar', back: 'nav', cap: 'nav', panel: 'panel', sknob: 'panel', tknob: 'panel' };
   const TG = { scene: null, lv: [], A: null };
   const scene = { mode: 0, cTexW: 1, cTexH: 1, cScale: 1, contentH: 1, page: [1, 1, 1], img: null, imgW: 1, imgH: 1, isVideo: false };
   const scroll = { y: 0, v: 0, drag: null, max: 0, toTop: false, autoDir: 1 };
@@ -697,7 +702,8 @@
     const tkx = pg.tog.x + 2 + KNOB.w / 2 + tg.knob.v * (pg.tog.w - 4 - KNOB.w);
     const tw = KNOB.w * (1 + 0.42 * ta), th = KNOB.h * (1 + 0.38 * ta);
     top.push({ id: 'tknob', g: 3, x: tkx, y: pg.tog.y, w: tw, h: th, r: th / 2, sa: tj.sa, s: tj.s, white: clamp(1 - ta * 1.6, 0, 1), frost: 0, zoom: 1 + 0.15 * clamp(ta, 0, 1), veil: 0, sh: 0.9, adapt: ad('panel') });
-    return { base, top, pg, kx };
+    const vis = (sh) => !S.hidden.has(WIDGET_OF[sh.id]);
+    return { base: base.filter(vis), top: top.filter(vis), pg, kx };
   }
 
   /* ------------------------------ 上传形状 uniform ------------------------------ */
@@ -1164,6 +1170,7 @@
     gl.uniform1f(u.u_glareFar, P.glareFar);
     gl.uniform1f(u.u_fresnel, P.fresnel);
     gl.uniform1f(u.u_contact, P.contact);
+    gl.uniform1f(u.u_noInvert, P.noInvert ? 1 : 0);
     gl.uniform1f(u.u_shA, P.shadowA);
     gl.uniform1f(u.u_shR, P.shadowR * k);
     gl.uniform2f(u.u_shOff, 0, P.shadowY * k);
@@ -1195,13 +1202,14 @@
 
     // 平面元素
     const pg = shapes.pg, tb = st.tab, lift = clamp(tb.lift.v, 0, 1);
-    const flats = [];
+    let flats = [];
     flats.push([tb.x.v, L.bar.cy, (L.tabW - 2) / 2, (L.bar.h - 8) / 2, 0, 0, 0, 0.075 * (1 - sstep(0, 0.35, lift)), (L.bar.h - 8) / 2, 1]);
     flats.push([pg.track.x + pg.track.w / 2, pg.track.y, pg.track.w / 2, 3, 0, 0, 0, 0.13, 3, 1]);
     const fx = Math.max(pg.track.x + 3, shapes.kx);
     flats.push([(pg.track.x + fx) / 2, pg.track.y, (fx - pg.track.x) / 2, 3, 0.04, 0.52, 1, 1, 3, 0]);
     flats.push([pg.tog.x + pg.tog.w / 2, pg.tog.y, pg.tog.w / 2, pg.tog.h / 2, 0, 0, 0, 0.12, pg.tog.h / 2, 1]);
     flats.push([pg.tog.x + pg.tog.w / 2, pg.tog.y, pg.tog.w / 2, pg.tog.h / 2, 0.2, 0.78, 0.35, clamp(st.toggle.onC.v, 0, 1), pg.tog.h / 2, 0]);
+    flats = flats.filter((f, i) => !S.hidden.has(['bar', 'panel', 'panel', 'panel', 'panel'][i]));
     FL.f0.fill(0); FL.f1.fill(0); FL.f2.fill(0);
     flats.forEach((f, i) => {
       FL.f0.set([f[0] * k, f[1] * k, f[2] * k, f[3] * k], i * 4);
@@ -1221,6 +1229,7 @@
       [L.capRight - L.capOpen.w, L.capTop, L.capOpen.w, L.capOpen.h, sstep(0.45, 0.95, st.cap.morph.v), 1, 0, 0],
       [pg.x, pg.y, pg.w, pg.h, 1, 1, 0, 0],
     ];
+    ['bar', 'bar', 'nav', 'nav', 'nav', 'panel'].forEach((w, i) => { if (S.hidden.has(w)) sprites[i][4] = 0; });
     sprites.forEach((s, i) => {
       SP.r.set([s[0] * k, s[1] * k, s[2] * k, s[3] * k], i * 4);
       SP.x.set([s[4], s[5], s[6] * k, s[7] * k], i * 4);
@@ -1308,6 +1317,17 @@
         capEl.classList.add('show');
       },
       scrollTo(y) { scroll.y = y; scroll.v = 0; },
+      /** only show these widgets: 'lens' | 'blobs' | 'bar' | 'nav' | 'panel' (no argument = all) */
+      focus(list) { S.hidden = new Set(list ? ['lens', 'blobs', 'bar', 'nav', 'panel'].filter((w) => !list.includes(w)) : []); },
+      reset() {
+        onAction('resetLayout');
+        closeMenu(); st.cap.morph.snap(0);
+        st.tab.sel = 0; st.tab.lift.snap(0); st.tab.x.snap(tabCenter(0)); paintTab();
+        st.slider.v = 0.62; st.slider.kx.snap(0.62); st.slider.act.snap(0); SPR[5].dirty = true;
+        st.toggle.on = true; st.toggle.knob.snap(1); st.toggle.onC.snap(1); st.toggle.act.snap(0);
+        [st.lens, ...st.blobs].forEach((o) => { o.pos.x.vel = o.pos.y.vel = 0; o.jelly.amt.snap(0); o.press.snap(0); });
+        st.glowA.a.snap(0); st.glowB.a.snap(0);
+      },
       geo() {
         const pg = panelGeo();
         return {

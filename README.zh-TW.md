@@ -52,6 +52,12 @@ Apple 的材質本質上是一片**透鏡**：平坦的中心保持清澈，彎�
 </tr>
 </table>
 
+## 對照蘋果實拍
+
+三種觀感：**Regular**（多數欄位與按鈕，重度模糊＋乳白薄紗）、**Clear**（照片／影片上，中度模糊、無薄紗）、**Crystal**（iOS 27 Siri 水滴，完全透明、整體穹頂、彩虹帶）——對應預設 `regular`、`clear`、`crystal`。
+
+<p align="center"><img src="docs/media/apple-scenes.png" width="640" alt="三種觀感的復刻場景"></p>
+
 ## 原理
 
 ```

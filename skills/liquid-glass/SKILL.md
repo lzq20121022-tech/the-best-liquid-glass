@@ -49,6 +49,22 @@ Before writing code, determine for every glass element (read the code; take a sc
 
 ### 3. Choose parameters
 
+#### Apple's three looks (verified against screenshots)
+
+Compared against Apple's HIG material examples, the iOS 27 product page, the Siri orb, and real iOS / macOS screenshots
+(tab bars, iMessage, Maps, share sheets, sidebars), Liquid Glass shows up as three distinct looks. Pick one per element:
+
+| Look | Preset | Where Apple uses it | Blur | Veil | Edge | Lensing & color |
+|---|---|---|---|---|---|---|
+| **Regular** | `'regular'` | Most in-app bars, buttons, sheets, sidebars, anything with lots of text | strong | lifts light content to milky white, darkens dark content | 1 px hairline + grey inner ring on white | narrow rim band, almost no dispersion |
+| **Clear** | `'clear'` | Over photos / video, Lock Screen, Ask Siri bar, media controls | moderate (≈3 pt) | none, slight lift (add a 35 % dark dim behind it if the content is bright) | crisp line, brighter on the light-facing side | visible rim lensing, slight fringes |
+| **Crystal** | `'crystal'` | The iOS 27 Siri orb, showpieces, magnifiers | none | none | strong bright rim at the bottom | full-dome magnification, inverted reflection at the rim, rainbow band |
+
+`'default'` sits between Clear and Crystal (almost no blur, prism fringes) — what most people mean by "Liquid Glass".
+Use Regular whenever text inside the glass must stay readable over busy content; never use Crystal for navigation chrome.
+`noInvert: true` (default) keeps bars from flipping content upside down; `'crystal'` turns it off on purpose.
+Runnable side-by-side: `examples/apple-scenes.html`.
+
 Call `LiquidGlass.recommend(scene)` with the answers from step 1 and use its `params` — or read
 [references/recipes.md](references/recipes.md) and decide by hand. State your reasoning in one or two
 sentences to the user (e.g. "busy photo behind a navbar with text → Regular material, frost 6, dispersion 0.1").
@@ -64,9 +80,9 @@ Full parameter meanings and ranges: [references/parameters.md](references/parame
 
 Core rules of thumb:
 
-1. **Never let frost hide the lensing.** The refraction at the rim is what makes it Liquid Glass; heavy blur turns it back into ordinary glassmorphism.
-2. **Behind = media → Clear material** (`frost` 0–1.5, low `veil`). Add frost only if the glass carries text over a busy image.
-3. **Behind = text/UI → Regular material** (`frost` 1.5–4), keep `disp` ≤ 0.06 so fringes don't fizz on glyphs.
+1. **Never let frost hide the rim.** Even Apple's Regular keeps a refracting rim and a crisp edge; a plain blur with a border is ordinary glassmorphism.
+2. **Behind = media → `'clear'`** (frost ≈ 3, no veil) — or `'default'` (frost 0.5) when the user asks for maximum transparency and prism fringes.
+3. **Text inside the glass over busy content → `'regular'`** (frost ≈ 9, veil ≈ 0.3), keep `disp` ≤ 0.06 so fringes don't fizz on glyphs.
 4. **Behind = flat color → nothing to refract.** Definition must come from `rimI` 0.9+, `contact` 1.4+, `shadowA` 0.28+, `fresnel` 0.6.
 5. **Small controls** (≤ 64 px): `bezel = min(h/2, 22)`, `thickness ≈ 1.4 × bezel`. Whole surface becomes a dome.
 6. **Bars**: `bezel` 26–30, `thickness` 40–46. **Panels/sheets**: `bezel` 30–34, `thickness` 46–54, `frost` 6–12.

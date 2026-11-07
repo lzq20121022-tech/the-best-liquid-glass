@@ -52,6 +52,12 @@ Apple의 소재는 **렌즈**입니다. 평평한 가운데는 투명하게 유�
 </tr>
 </table>
 
+## Apple과 대조
+
+세 가지 모습이 있습니다: **Regular**(대부분의 바와 버튼, 강한 블러 + 우윳빛 베일), **Clear**(사진·영상 위, 중간 블러, 베일 없음), **Crystal**(iOS 27 Siri, 완전히 투명한 돔, 무지개 띠). 프리셋 `regular`, `clear`, `crystal`에 대응합니다.
+
+<p align="center"><img src="docs/media/apple-scenes.png" width="640" alt="세 가지 모습의 재현 장면"></p>
+
 ## 원리
 
 1. **형태**: 초타원 모서리를 가진 둥근 사각형 SDF(`R = 1.528·r`, `n ≈ 3.25` ≈ iOS 연속 곡률 모서리). 같은 그룹은 스무스 최소값으로 연결.

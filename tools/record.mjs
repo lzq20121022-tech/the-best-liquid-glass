@@ -93,74 +93,64 @@ const mark = (name) => marks.push({ name, t: frame / FPS });
 const markEnd = (name) => { const m = marks.find((x) => x.name === name && x.end == null); if (m) m.end = frame / FPS; };
 
 // ---------------------------------------------------------------- timeline
+// Every segment starts from a clean layout (reset) and shows only the glass it is about (focus).
+const segment = async (name, { scene, preset = 'default', focus = null, scroll = null, caption: cap }) => {
+  if (scene) { await lg('scene', scene); await new Promise((r) => setTimeout(r, 450)); }
+  await lg('preset', preset);
+  await lg('reset');
+  await lg('focus', focus);
+  if (scroll != null) await lg('scrollTo', scroll);
+  await lg('step', 2, 1 / FPS);
+  if (cap) await caption(cap[0], cap[1]);
+  mark(name);
+};
 let g = await lg('geo');
 
-// 1. intro
-await lg('scene', 'wallpaper');
+// 1. intro — everything, wallpaper, rotating light
+await segment('intro', { scene: 'wallpaper', caption: ['The Best Liquid Glass', 'Physically based · real-time · in your browser'] });
 await lg('set', 'lightMode', 'spin');
-await hold(0.2);
-mark('intro');
-await caption('The Best Liquid Glass', 'Physically based · real-time · in your browser');
-await hold(2.6);
+await hold(2.8);
 await lg('set', 'lightMode', 'fixed');
 markEnd('intro');
 
-// 2. scrolling content under the bars
-await lg('scene', 'article');
-await new Promise((r) => setTimeout(r, 500));
-await lg('scrollTo', 0);
-mark('scroll');
-await caption('Real refraction, not blur', 'Content bends around the rim as it scrolls under the glass');
+// 2. scrolling content under the bars only
+await segment('scroll', { scene: 'article', focus: ['bar', 'nav'], scroll: 0, caption: ['Real refraction, not blur', 'Content bends around the rim as it scrolls under the glass'] });
 for (let i = 0, n = Math.round(4 * FPS); i < n; i++) { await lg('scrollTo', ease(i / n) * 900); await snap(); }
 markEnd('scroll');
 
-// 3. lens over text
-await lg('preset', 'clear');
-await lg('scrollTo', 760);
+// 3. the lens over text
+await segment('lens', { scene: 'article', focus: ['lens'], scroll: 760, caption: ['Snell’s law on a squircle bevel', 'Clear center · magnifying, bending rim'] });
 g = await lg('geo');
-mark('lens');
-await caption('Snell’s law on a squircle bevel', 'Flat clear center · magnifying, bending rim');
-await path2([[g.lens.x, g.lens.y], [g.lens.x + 60, g.lens.y + 120], [g.lens.x + 330, g.lens.y + 150], [g.lens.x + 180, g.lens.y + 60]], 4.5);
+await path2([[g.lens.x, g.lens.y], [g.lens.x + 60, g.lens.y + 130], [g.lens.x + 330, g.lens.y + 150], [g.lens.x + 190, g.lens.y + 60]], 4.5);
 await hold(0.6);
 markEnd('lens');
 
 // 4. dispersion on the test grid
-await lg('scene', 'grid');
-await new Promise((r) => setTimeout(r, 500));
-await lg('scrollTo', 60);
+await segment('dispersion', { scene: 'grid', focus: ['lens', 'blobs'], scroll: 60, caption: ['Spectral dispersion', 'Ten wavelengths, each refracted with its own index'] });
 g = await lg('geo');
-mark('dispersion');
-await caption('Spectral dispersion', 'Seven wavelengths, each refracted with its own index');
 await path2([[g.lens.x, g.lens.y], [g.lens.x + 80, g.lens.y - 120], [g.lens.x + 260, g.lens.y + 40]], 2.6);
 await lg('preset', 'prism');
-await caption('Spectral dispersion', 'Prism preset · dispersion 0.30 · 12 spectral taps');
+await caption('Spectral dispersion', 'Prism preset · dispersion 0.36 · 16 spectral taps');
 g = await lg('geo');
 await path2([[g.lens.x, g.lens.y], [g.lens.x - 160, g.lens.y + 90], [g.lens.x - 40, g.lens.y - 70]], 2.6);
 await hold(0.4);
 markEnd('dispersion');
 
-// 5. liquid merging
-await lg('preset', 'regular');
+// 5. liquid merging — just the two droplets
+await segment('merge', { scene: 'wallpaper', focus: ['blobs'], caption: ['Liquid merging', 'Signed distance fields blend with a smooth minimum'] });
 await lg('set', 'mergeK', 60);
-await lg('scene', 'wallpaper');
 g = await lg('geo');
-mark('merge');
-await caption('Liquid merging', 'Signed distance fields blend with a smooth minimum');
 {
   const a = g.blobs[0], b = g.blobs[1];
-  await path2([[b.x, b.y], [a.x + 70, a.y + 30], [a.x + 40, a.y + 10], [b.x + 60, b.y + 40]], 4.2);
+  await path2([[b.x, b.y], [a.x + 70, a.y + 30], [a.x + 40, a.y + 10], [b.x, b.y]], 4.4);
 }
-await hold(0.5);
+await hold(0.6);
 markEnd('merge');
 await lg('set', 'mergeK', 40);
 
 // 6. tab bar droplet
-await lg('scene', 'article');
-await new Promise((r) => setTimeout(r, 500));
-await lg('scrollTo', 400);
+await segment('tabbar', { scene: 'article', focus: ['bar'], scroll: 380, caption: ['Tab bar droplet', 'Press and slide: the selection lifts into a magnifying lens'] });
 g = await lg('geo');
-mark('tabbar');
-await caption('Tab bar droplet', 'Press and slide: the selection lifts into a magnifying lens');
 {
   const c = g.bar.centers, y = g.bar.y + g.bar.h / 2;
   await page.mouse.move(c[0], y);
@@ -174,17 +164,16 @@ await caption('Tab bar droplet', 'Press and slide: the selection lifts into a ma
 markEnd('tabbar');
 
 // 7. morph
-mark('morph');
-await caption('Shape morphing', 'A button flows into a menu — one continuous surface');
+await segment('morph', { scene: 'article', focus: ['nav'], scroll: 0, caption: ['Shape morphing', 'A button flows into a menu — one continuous surface'] });
+g = await lg('geo');
+await hold(0.3);
 await tap(g.cap.x, g.cap.y, 1.4);
-await tap(g.W * 0.35, g.H * 0.45, 1.0);
+await tap(g.W * 0.35, g.H * 0.55, 1.0);
 markEnd('morph');
 
 // 8. controls
-await lg('scene', 'wallpaper');
+await segment('controls', { scene: 'wallpaper', focus: ['panel'], caption: ['Glass controls', 'Knobs turn into clear lenses while you drag them'] });
 g = await lg('geo');
-mark('controls');
-await caption('Glass controls', 'Knobs turn into clear lenses while you drag them');
 {
   const t = g.track, y = t.y;
   await path2([[t.x + t.w * 0.62, y], [t.x + t.w * 0.1, y], [t.x + t.w * 0.92, y], [t.x + t.w * 0.5, y]], 3.2);
@@ -195,19 +184,14 @@ await caption('Glass controls', 'Knobs turn into clear lenses while you drag the
 markEnd('controls');
 
 // 9. light
-mark('light');
-await caption('Content-tinted specular', 'Rim light follows the light source; glare takes the color beneath');
+await segment('light', { scene: 'wallpaper', focus: ['lens', 'blobs'], caption: ['Content-tinted specular', 'A crisp rim follows the light; glare takes the color beneath'] });
 await lg('set', 'lightMode', 'spin');
 await hold(3);
 await lg('set', 'lightMode', 'fixed');
 markEnd('light');
 
 // 10. adaptivity
-await lg('scene', 'article');
-await new Promise((r) => setTimeout(r, 500));
-await lg('scrollTo', 300);
-mark('adapt');
-await caption('Light / dark adaptivity', 'Glass and symbols flip to stay legible');
+await segment('adapt', { scene: 'article', focus: ['bar', 'nav', 'lens'], scroll: 300, caption: ['Light / dark adaptivity', 'Glass and symbols flip to stay legible'] });
 await hold(1.2);
 await lg('set', 'dark', true);
 await new Promise((r) => setTimeout(r, 600));
@@ -216,11 +200,19 @@ await lg('set', 'dark', false);
 await new Promise((r) => setTimeout(r, 600));
 markEnd('adapt');
 
-// 11. under the hood
-await lg('scene', 'grid');
-await new Promise((r) => setTimeout(r, 500));
-mark('debug');
-await caption('Under the hood', 'Displacement field from Snell refraction');
+// 11. Apple's three looks on the same scene
+await segment('looks', { scene: 'wallpaper', focus: ['lens', 'blobs', 'panel'], caption: ['Apple Regular', 'Blur + luminosity — most system components'] , preset: 'regular' });
+await hold(1.5);
+await lg('preset', 'clear');
+await caption('Apple Clear', 'Translucent, moderate blur — over photos and video');
+await hold(1.5);
+await lg('preset', 'crystal');
+await caption('Crystal', 'The iOS 27 Siri orb — full dome, prism, inversion');
+await hold(1.8);
+markEnd('looks');
+
+// 12. under the hood
+await segment('debug', { scene: 'grid', focus: ['lens', 'blobs'], caption: ['Under the hood', 'Displacement field from Snell refraction'] });
 await lg('set', 'debug', 3);
 await hold(1.6);
 await caption('Under the hood', 'Signed distance field');
@@ -229,13 +221,8 @@ await hold(1.6);
 await lg('set', 'debug', 0);
 markEnd('debug');
 
-// 12. comparison
-await lg('scene', 'article');
-await new Promise((r) => setTimeout(r, 500));
-await lg('preset', 'clear');
-await lg('scrollTo', 760);
-mark('compare');
-await caption('Typical “AI liquid glass”', 'Blur + white border');
+// 13. comparison
+await segment('compare', { scene: 'article', focus: ['lens', 'bar', 'nav'], scroll: 760, caption: ['Typical “AI liquid glass”', 'Blur + white border'] });
 await lg('set', 'lazy', true);
 await hold(1.8);
 await caption('The Best Liquid Glass', 'Refraction · dispersion · Fresnel · specular');
@@ -243,11 +230,8 @@ await lg('set', 'lazy', false);
 await hold(2.2);
 markEnd('compare');
 
-// 13. outro
-await lg('preset', 'regular');
-await lg('scene', 'wallpaper');
-mark('outro');
-await caption('The Best Liquid Glass', 'WebGL2 · MIT · drop-in library & AI skill included');
+// 14. outro
+await segment('outro', { scene: 'wallpaper', caption: ['The Best Liquid Glass', 'WebGL2 · MIT · drop-in library & AI skill included'] });
 await hold(2.4);
 await caption('');
 await hold(0.4);
@@ -265,11 +249,11 @@ const gif = (name, w = 640, fps = 15) => {
   const m = marks.find((x) => x.name === name);
   if (!m) return;
   ff(['-ss', String(m.t), '-t', String(m.end - m.t), '-i', path.join(MEDIA, 'demo.mp4'),
-    '-vf', `fps=${fps},scale=${w}:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=160:stats_mode=diff[p];[b][p]paletteuse=dither=sierra2_4a:diff_mode=rectangle`,
+    '-vf', `fps=${fps},scale=${w}:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=128:stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=4:diff_mode=rectangle`,
     path.join(MEDIA, `${name}.gif`)]);
   console.log('gif', name);
 };
-for (const n of ['scroll', 'lens', 'dispersion', 'merge', 'tabbar', 'morph', 'controls', 'adapt', 'compare']) gif(n);
+for (const n of ['scroll', 'lens', 'dispersion', 'merge', 'tabbar', 'morph', 'controls', 'adapt', 'looks', 'compare']) gif(n);
 // poster frame
 const lensMark = marks.find((x) => x.name === 'lens');
 ff(['-ss', String(lensMark.t + 3.2), '-i', path.join(MEDIA, 'demo.mp4'), '-frames:v', '1', path.join(MEDIA, 'poster.jpg')]);

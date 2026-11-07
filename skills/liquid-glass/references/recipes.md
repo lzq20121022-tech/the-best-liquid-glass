@@ -5,6 +5,8 @@ Start from the closest recipe, then adjust with the modifiers at the bottom.
 
 ## Recipes
 
+First decide the look (see SKILL.md → *Apple's three looks*): `regular` for text-heavy chrome over busy content, `clear` over media, `crystal` for showpieces. Then refine with the rows below.
+
 | Scene | Engine | Params | Why |
 |---|---|---|---|
 | **Tab bar / navbar over a photo or video** | webgl (dom if over page) | `frost 1–3, veil 0.05, disp 0.08–0.1, bezel 28, thickness 44, sat 1.2` | Clear-ish so the image shows through, just enough frost for labels. |

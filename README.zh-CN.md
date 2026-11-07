@@ -51,9 +51,29 @@
 <td><img src="docs/media/adapt.gif" alt="明暗自适应"><br><b>明暗自适应。</b>玻璃与图标在深浅之间切换，始终清晰。</td>
 <td><img src="docs/media/scroll.gif" alt="滚动"><br><b>内容在玻璃下滚动。</b>iOS 式惯性、橡皮筋回弹与滚动边缘渐隐。</td>
 </tr>
+<tr>
+<td><img src="docs/media/looks.gif" alt="三种观感"><br><b>三种观感。</b>同一场景下的苹果 Regular、苹果 Clear 和 Siri 式晶体。</td>
+<td><img src="docs/media/compare.gif" alt="对比"><br><b>对比“AI 毛玻璃”。</b>先是模糊加白边，再切回真正的玻璃。</td>
+</tr>
 </table>
 
 演示页还包含完整的参数面板（折射率、厚度、弧面宽度、色散、磨砂、光源、阴影、融合……）、调试视图（SDF、法线、位移场、高度图）、对照模式（按住 <kbd>空格</kbd>）、手机陀螺仪驱动的高光，以及使用你自己的图片或视频作为背景。
+
+## 对照苹果实拍
+
+预设参数是对照苹果官方材质示例和大量 iOS 真机截图逐项调出来的。Liquid Glass 其实不是一种效果，而是三种——大多数"AI 液态玻璃"只模仿了第一种，而且没模仿对：
+
+| | Regular 常规 | Clear 清透 | Crystal 晶体 |
+|---|---|---|---|
+| 用在哪 | 大多数栏、按钮、面板 | 照片、视频、锁屏、Ask Siri | iOS 27 的 Siri 水滴 |
+| 模糊 | 重 | 中等 | 无 |
+| 薄纱 | 浅色上乳白、深色上压暗 | 无 | 无 |
+| 边缘 | 细线 + 内侧灰环 | 锐利亮线 | 底缘强高光 |
+| 折射 | 窄边缘带 | 明显的边缘透镜 | 整体穹顶、倒像、彩虹带 |
+| 预设 | `'regular'` | `'clear'` | `'crystal'` |
+
+<p align="center"><img src="docs/media/apple-scenes.png" width="640" alt="用 crystal / clear / regular 三个预设复刻的 Siri 水滴、Ask Siri 栏和 iMessage 栏"></p>
+<p align="center"><sub>由库渲染的复刻场景 —— <a href="skills/liquid-glass/examples/apple-scenes.html">examples/apple-scenes.html</a></sub></p>
 
 ## 原理
 
@@ -183,7 +203,8 @@ docs/media/                       视频、GIF、截图
 
 ## 参考资料
 
-- Apple —— Liquid Glass 概览与 WWDC25《Meet Liquid Glass》
+- Apple —— Liquid Glass 概览、WWDC25《Meet Liquid Glass》与 [HIG · Materials](https://developer.apple.com/design/human-interface-guidelines/materials)（regular 与 clear）
+- Nick Heer —— [On Liquid Glass](https://pxlnv.com/blog/on-liquid-glass/)（大量真实截图）
 - Chris Feijoo —— [Liquid Glass in the browser: refraction with CSS and SVG](https://kube.io/blog/liquid-glass-css-svg/)（表面剖面、斯涅尔位移贴图）
 - [Liquid Glass Studio](https://github.com/iyinchao/liquid-glass-studio)（SDF 融合、边缘系数）
 - Jorge Jimenez —— *Next Generation Post Processing in Call of Duty: Advanced Warfare*（13-tap 降采样）

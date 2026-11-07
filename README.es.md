@@ -53,6 +53,12 @@ El material de Apple es una **lente**: el centro plano queda nítido mientras el
 </tr>
 </table>
 
+## Comparado con Apple
+
+Tres aspectos: **Regular** (la mayoría de barras y botones; desenfoque fuerte y velo lechoso), **Clear** (sobre fotos y vídeo; desenfoque moderado, sin velo) y **Crystal** (el orbe de Siri de iOS 27; cúpula totalmente transparente, banda de arcoíris). Presets `regular`, `clear` y `crystal`.
+
+<p align="center"><img src="docs/media/apple-scenes.png" width="640" alt="Escenas recreadas con los tres aspectos"></p>
+
 ## Cómo funciona
 
 1. **Forma**: SDF de un rectángulo redondeado con esquinas superelípticas (`R = 1.528·r`, `n ≈ 3.25` ≈ esquinas continuas de iOS). Las formas de un grupo se unen con un mínimo suave.

@@ -72,12 +72,12 @@ html, body {
 }
 .lang button.on { background: #3a3a40; color: #fff; }
 #caption {
-  position: absolute; left: 50%; bottom: 118px; transform: translateX(-50%);
-  padding: 10px 18px; border-radius: 14px; background: rgba(0, 0, 0, 0.72); color: #fff;
-  font: 600 17px/1.35 -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", "Segoe UI", sans-serif;
+  position: absolute; left: 50%; top: 18px; transform: translateX(-50%);
+  padding: 8px 16px; border-radius: 13px; background: rgba(0, 0, 0, 0.62); color: #fff;
+  font: 600 15px/1.35 -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", "Segoe UI", sans-serif;
   text-align: center; pointer-events: none; opacity: 0; transition: opacity 0.35s; white-space: nowrap;
 }
-#caption small { display: block; font-weight: 500; font-size: 13px; opacity: 0.75; margin-top: 2px; }
+#caption small { display: block; font-weight: 500; font-size: 12px; opacity: 0.75; margin-top: 1px; }
 #caption.show { opacity: 1; }
 #collapse {
   width: 30px; height: 30px; border-radius: 8px; border: 0; background: transparent; color: var(--muted);

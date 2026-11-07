@@ -14,6 +14,7 @@ the ones marked **per-element** can also be passed to `lg.add(el, { … })`.
 | `refr` **per-element** | 1.2 | −2–3 | Multiplier on displacement. Negative values sample outward (concave look: the rim shows what is outside). |
 | `profile` | 0 | 0, 1, 2 | Surface curve: 0 convex squircle (soft flat→rim transition, Apple-like), 1 convex circle (harsher), 2 lip (raised rim, shallow center dip). |
 | `zoom` **per-element** | 1 | 0.6–2 | Magnifies the flat center (magnifier / loupe). |
+| `noInvert` | `true` | bool | Keep refracted samples on their side of the shape's medial axis (no rod-like upside-down image in bars). Set `false` for Siri-style droplets. |
 | `cornerN` | 3.25 | 2–6 | Superellipse exponent of the corners. 2 = circular `border-radius`; ~3.25 ≈ iOS continuous corners. |
 
 ## Dispersion
@@ -68,6 +69,20 @@ the ones marked **per-element** can also be passed to `lg.add(el, { … })`.
 `lg.tabbar(el, { items, selected, onChange, glass })` — items default to the bar's children; the selected item gets
 the class `lg-selected`; the bar emits `lg:change`. `lg.moveTo(el, x, y, animate = true)` moves a draggable element.
 Events (bubble): `lg:dragstart`, `lg:drag`, `lg:dragend` (`detail: { x, y, vx, vy }`), `lg:change` (`detail: { index }`).
+
+## Presets
+
+| Preset | Look |
+|---|---|
+| `default` | Almost clear, prism fringes (frost 0.5, dispersion 0.16) |
+| `regular` | Apple Regular: frost 9, veil 0.32, crisp grey ring, little dispersion |
+| `clear` | Apple Clear: frost 3, no veil, slight lift, dispersion 0.1 |
+| `crystal` | Siri orb: no frost, dispersion 0.14 × 16 taps, convex-circle dome, zoom 1.25, inversion allowed |
+| `prism` | Exaggerated dispersion for show |
+| `thick` | Heavy frosted slab |
+| `subtle` | Low-key glass for dense UIs |
+| `tinted` | Colored glass |
+| `auto` | Measure the background and choose per element (WebGL engine) |
 
 ## Engine options (`create`)
 

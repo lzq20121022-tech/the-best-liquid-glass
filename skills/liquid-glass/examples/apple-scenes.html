@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Liquid Glass · Apple reference scenes</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #0b0b0d; color: #f2f2f7; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  main { max-width: 900px; margin: 0 auto; padding: 40px 20px 80px; display: grid; gap: 36px; }
+  header h1 { margin: 0 0 6px; font-size: 28px; letter-spacing: -.01em; }
+  header p { margin: 0; color: #9a9aa2; line-height: 1.5; }
+  .label { display: flex; justify-content: space-between; align-items: baseline; margin: 0 0 10px; }
+  .label b { font-size: 14px; letter-spacing: .08em; text-transform: uppercase; }
+  .label span { font: 12px ui-monospace, Menlo, Consolas, monospace; color: #8e8e96; }
+  .scene { position: relative; overflow: hidden; border-radius: 22px; }
+  .scene canvas.bg { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+  /* A · Siri orb over the Lock Screen (crystal) */
+  #siri { height: 440px; }
+  #siri .orb { position: absolute; left: 50%; top: 34px; width: 380px; height: 290px; margin-left: -190px; border-radius: 145px; }
+  #siri .bars { position: absolute; right: 34px; top: 92px; display: flex; gap: 4px; align-items: flex-end; }
+  #siri .bars i { display: block; width: 6px; background: #fff; border-radius: 2px; }
+
+  /* B · Ask Siri bar over a photo (clear) */
+  #ask { height: 190px; }
+  #ask .row { position: absolute; left: 0; right: 0; top: 46px; display: flex; gap: 16px; padding: 0 40px; align-items: center; }
+  #ask .circle { width: 72px; height: 72px; border-radius: 50%; display: grid; place-items: center; color: var(--lg-fg, #fff); flex: none; }
+  #ask .field { flex: 1; height: 72px; border-radius: 36px; display: flex; align-items: center; padding: 0 30px; font-size: 26px; color: var(--lg-fg, #fff); }
+  #ask .field i { display: inline-block; width: 3px; height: 34px; background: #fff; margin-right: 2px; border-radius: 2px; }
+  #ask .home { position: absolute; left: 50%; bottom: 22px; width: 150px; height: 7px; margin-left: -75px; border-radius: 4px; background: rgba(255,255,255,.75); }
+
+  /* C · iMessage bar on white (regular) */
+  #imsg { height: 150px; }
+  #imsg .row { position: absolute; left: 0; right: 0; top: 40px; display: flex; gap: 16px; padding: 0 40px; align-items: center; }
+  #imsg .circle { width: 66px; height: 66px; border-radius: 50%; display: grid; place-items: center; color: var(--lg-fg, #111); flex: none; }
+  #imsg .field { flex: 1; height: 66px; border-radius: 33px; display: flex; align-items: center; padding: 0 26px; font-size: 26px; color: #b5b5ba; }
+  #imsg .field i { display: inline-block; width: 3px; height: 32px; background: #0a84ff; margin-right: 2px; border-radius: 2px; }
+  #imsg .wave { margin-left: auto; display: flex; gap: 4px; align-items: center; }
+  #imsg .wave b { display: block; width: 4px; border-radius: 2px; background: #a0a0a6; }
+  svg { display: block; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Apple reference scenes</h1>
+    <p>Three situations rebuilt from iOS screenshots and rendered with liquid-glass.js presets:
+      <code>crystal</code> (the iOS 27 Siri orb), <code>clear</code> (Ask Siri over media) and <code>regular</code> (iMessage on white).</p>
+  </header>
+
+  <section>
+    <div class="label"><b>Siri orb · crystal</b><span>preset: 'crystal'</span></div>
+    <div class="scene" id="siri"><canvas class="bg"></canvas><div class="orb"></div><div class="bars"><i style="height:9px"></i><i style="height:14px"></i><i style="height:19px"></i><i style="height:24px"></i></div></div>
+  </section>
+
+  <section>
+    <div class="label"><b>Ask Siri over a photo · clear</b><span>preset: 'clear'</span></div>
+    <div class="scene" id="ask"><canvas class="bg"></canvas>
+      <div class="row">
+        <div class="circle c-plus"><svg width="30" height="30" viewBox="0 0 24 24"><path d="M12 4v16M4 12h16" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></div>
+        <div class="field"><i></i>Ask Siri</div>
+        <div class="circle c-mic"><svg width="30" height="30" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4M9 21h6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg></div>
+      </div>
+      <div class="home"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="label"><b>iMessage on white · regular</b><span>preset: 'regular'</span></div>
+    <div class="scene" id="imsg"><canvas class="bg"></canvas>
+      <div class="row">
+        <div class="circle"><svg width="30" height="30" viewBox="0 0 24 24"><path d="M12 4v16M4 12h16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></div>
+        <div class="field"><i></i>iMessage<span class="wave"><b style="height:10px"></b><b style="height:18px"></b><b style="height:26px"></b><b style="height:16px"></b><b style="height:10px"></b></span></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="../assets/liquid-glass.js"></script>
+<script>
+  const FONT = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", system-ui, sans-serif';
+  function canvasFor(scene, draw) {
+    const cv = scene.querySelector('canvas.bg');
+    const W = scene.clientWidth, H = scene.clientHeight, k = Math.min(devicePixelRatio || 1, 2);
+    cv.width = Math.round(W * k); cv.height = Math.round(H * k);
+    const x = cv.getContext('2d');
+    x.setTransform(k, 0, 0, k, 0, 0);
+    draw(x, W, H);
+    return cv;
+  }
+  const rnd = (() => { let s = 7; return () => ((s = (s * 16807) % 2147483647) / 2147483647); })();
+
+  // ---------------- A · Lock Screen with the Siri orb ----------------
+  const siri = document.getElementById('siri');
+  const bgA = canvasFor(siri, (x, W, H) => {
+    const g = x.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, '#a8896a'); g.addColorStop(0.55, '#b99a77'); g.addColorStop(1, '#9c7c5d');
+    x.fillStyle = g; x.fillRect(0, 0, W, H);
+    // soft light circle (wallpaper shape)
+    x.strokeStyle = 'rgba(255,240,220,.35)'; x.lineWidth = 46;
+    x.beginPath(); x.arc(W * 0.22, H * 0.36, 210, 0, 7); x.stroke();
+    // phone bezel + Dynamic Island
+    x.fillStyle = '#050505'; x.fillRect(0, 0, W, 14);
+    x.beginPath(); x.roundRect(W / 2 - 120, 62, 240, 84, 42); x.fill();
+    x.fillStyle = '#16183a'; x.beginPath(); x.arc(W / 2 + 76, 104, 14, 0, 7); x.fill();
+    x.fillStyle = '#3b47a8'; x.beginPath(); x.arc(W / 2 + 76, 104, 5, 0, 7); x.fill();
+    // date
+    x.fillStyle = 'rgba(255,255,255,.92)'; x.font = `600 46px ${FONT}`; x.textAlign = 'center';
+    x.fillText('Wed Apr 1', W / 2, 228);
+    // clock digits
+    x.fillStyle = '#ead2a8'; x.font = `700 190px ${FONT}`;
+    x.fillText('9:41', W / 2, H + 48);
+  });
+  LiquidGlass.create({ background: bgA, container: siri, preset: 'crystal', liveBackground: false, params: { bezel: 140, thickness: 120, shadowA: 0.12, contact: 0.3 } })
+    .add('#siri .orb', { draggable: { bounds: 'parent', snapBack: true } });
+
+  // ---------------- B · Ask Siri over a red photo ----------------
+  const ask = document.getElementById('ask');
+  const bgB = canvasFor(ask, (x, W, H) => {
+    const g = x.createLinearGradient(0, 0, W, 0);
+    g.addColorStop(0, '#5c0a10'); g.addColorStop(0.35, '#b3101b'); g.addColorStop(0.62, '#d0141f'); g.addColorStop(0.8, '#3a1517'); g.addColorStop(1, '#1d1d1f');
+    x.fillStyle = g; x.fillRect(0, 0, W, H);
+    // textured paint strokes on the left
+    for (let i = 0; i < 220; i++) {
+      const px = rnd() * W * 0.45, py = rnd() * H;
+      x.strokeStyle = rnd() < 0.55 ? `rgba(236,214,140,${0.25 + rnd() * 0.5})` : `rgba(255,255,255,${0.1 + rnd() * 0.3})`;
+      x.lineWidth = 1 + rnd() * 3;
+      x.beginPath(); x.moveTo(px, py);
+      x.bezierCurveTo(px + rnd() * 30 - 15, py + rnd() * 30 - 15, px + rnd() * 40 - 20, py + rnd() * 40 - 20, px + rnd() * 50 - 25, py + rnd() * 50 - 25);
+      x.stroke();
+    }
+    for (let i = 0; i < 90; i++) { x.fillStyle = `rgba(0,0,0,${rnd() * 0.25})`; x.beginPath(); x.arc(W * 0.3 + rnd() * W * 0.45, rnd() * H, 6 + rnd() * 26, 0, 7); x.fill(); }
+    const v = x.createLinearGradient(0, 0, 0, H); v.addColorStop(0, 'rgba(0,0,0,.15)'); v.addColorStop(1, 'rgba(0,0,0,.35)');
+    x.fillStyle = v; x.fillRect(0, 0, W, H);
+  });
+  LiquidGlass.create({ background: bgB, container: ask, preset: 'clear', liveBackground: false })
+    .add('#ask .c-plus', { tint: '#b3101b', tintA: 0.18 })
+    .add('#ask .field')
+    .add('#ask .c-mic');
+
+  // ---------------- C · iMessage on white ----------------
+  const imsg = document.getElementById('imsg');
+  const bgC = canvasFor(imsg, (x, W, H) => { x.fillStyle = '#ffffff'; x.fillRect(0, 0, W, H); });
+  LiquidGlass.create({ background: bgC, container: imsg, preset: 'regular', liveBackground: false, params: { shadowA: 0.1, shadowR: 16, shadowY: 3 } })
+    .add('#imsg .circle')
+    .add('#imsg .field');
+</script>
+</body>
+</html>

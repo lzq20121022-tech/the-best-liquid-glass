@@ -95,7 +95,7 @@ if (!CHECK) {
   const media = path.join(root, 'docs/media');
   const ff = (a) => execFileSync('ffmpeg', ['-y', '-loglevel', 'error', ...a], { stdio: 'inherit' });
   ff(['-framerate', String(fps), '-i', path.join(DIR, 'f%05d.jpg'), '-c:v', 'libx264', '-crf', '20', '-preset', 'slow', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-vf', 'scale=1800:-2', path.join(media, 'library-drag.mp4')]);
-  ff(['-i', path.join(media, 'library-drag.mp4'), '-vf', `fps=${Math.min(fps, 18)},scale=640:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=160:stats_mode=diff[p];[b][p]paletteuse=dither=sierra2_4a:diff_mode=rectangle`, path.join(media, 'library-drag.gif')]);
+  ff(['-i', path.join(media, 'library-drag.mp4'), '-vf', `fps=12,scale=640:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=96:stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=4:diff_mode=rectangle`, path.join(media, 'library-drag.gif')]);
   fs.rmSync(DIR, { recursive: true, force: true });
   console.log('wrote docs/media/library-drag.mp4 + .gif at', fps, 'fps');
 }

@@ -47,7 +47,7 @@
 
 <script src="../assets/liquid-glass.js"></script>
 <script>
-  const lg = LiquidGlass.create({ engine: 'dom', params: { frost: 1, disp: 0.08 } });
+  const lg = LiquidGlass.create({ engine: 'dom', params: { frost: 0.4, disp: 0.16 } });
   lg.add('header', { role: 'navbar', surface: 'text' })
     .add('.fab', { role: 'button', bezel: 30, thickness: 30, draggable: { bounds: 'window' } });
   lg.tabbar('.tabbar', { glass: { surface: 'text' } });   // press & slide: the selection lifts into a glass droplet

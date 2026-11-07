@@ -53,11 +53,32 @@ so content behind it stretches and wraps around the outline. This project solves
 <td><img src="docs/media/adapt.gif" alt="Adaptivity"><br><b>Adaptivity.</b> Glass and symbols flip between light and dark to stay legible.</td>
 <td><img src="docs/media/scroll.gif" alt="Scrolling content"><br><b>Scroll under glass.</b> iOS‑style momentum, rubber banding and scroll‑edge fade.</td>
 </tr>
+<tr>
+<td><img src="docs/media/looks.gif" alt="Regular, Clear, Crystal"><br><b>Three looks.</b> Apple Regular, Apple Clear and the Siri‑style Crystal on the same scene.</td>
+<td><img src="docs/media/compare.gif" alt="Comparison"><br><b>Versus “AI glass”.</b> Blur + border, then the real thing.</td>
+</tr>
 </table>
 
 The demo also includes a full parameter panel (IOR, thickness, bezel, dispersion, frost, light, shadow, merging…),
 debug views (SDF, normals, displacement field, height map), a comparison mode (hold <kbd>Space</kbd>),
 gyroscope‑driven highlights on phones, and your own image or video as the background.
+
+## Matching Apple
+
+The presets were tuned side by side against Apple's own material examples and real iOS screenshots.
+Liquid Glass is not one look but three — and most "AI liquid glass" only imitates the first one, badly:
+
+| | Regular | Clear | Crystal |
+|---|---|---|---|
+| Used for | most bars, buttons, sheets | photos, video, Lock Screen, Ask Siri | the iOS 27 Siri orb |
+| Blur | strong | moderate | none |
+| Veil | milky on light, dark on dark | none | none |
+| Edge | hairline + grey inner ring | crisp light line | bright bottom rim |
+| Lensing | narrow rim | visible rim | full dome, inversion, rainbow band |
+| Preset | `'regular'` | `'clear'` | `'crystal'` |
+
+<p align="center"><img src="docs/media/apple-scenes.png" width="640" alt="Siri orb, Ask Siri bar and iMessage bar rebuilt with the crystal, clear and regular presets"></p>
+<p align="center"><sub>Rebuilt scenes rendered by the library — <a href="skills/liquid-glass/examples/apple-scenes.html">examples/apple-scenes.html</a></sub></p>
 
 ## How it works
 
@@ -200,7 +221,8 @@ docs/media/                       video, GIFs, screenshots
 
 ## References
 
-- Apple — Liquid Glass overview and the WWDC25 session *Meet Liquid Glass*
+- Apple — Liquid Glass overview, the WWDC25 session *Meet Liquid Glass*, and [HIG · Materials](https://developer.apple.com/design/human-interface-guidelines/materials) (regular vs. clear)
+- Nick Heer — [On Liquid Glass](https://pxlnv.com/blog/on-liquid-glass/) (real-world screenshots of the material)
 - Chris Feijoo — [Liquid Glass in the browser: refraction with CSS and SVG](https://kube.io/blog/liquid-glass-css-svg/) (surface profiles, Snell displacement maps)
 - [Liquid Glass Studio](https://github.com/iyinchao/liquid-glass-studio) (SDF merging, edge factors)
 - Jorge Jimenez — *Next Generation Post Processing in Call of Duty: Advanced Warfare* (13‑tap downsample)

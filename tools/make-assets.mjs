@@ -63,6 +63,8 @@ try {
       await p.evaluate(() => window.scrollTo(0, 180));
     });
     await shot('/skills/liquid-glass/examples/auto-tune.html', 'docs/media/example-auto.png', { width: 1100, height: 720, deviceScaleFactor: 1 });
+    await shot('/skills/liquid-glass/examples/apple-scenes.html', 'docs/media/apple-scenes.png', { width: 980, height: 1100, deviceScaleFactor: 1.5 });
+    await shot('/skills/liquid-glass/examples/drag.html', 'docs/media/example-drag.png', { width: 1200, height: 720, deviceScaleFactor: 1 });
   }
 
   if (want('demo')) {

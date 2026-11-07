@@ -160,6 +160,7 @@ uniform float u_rimI, u_rimW, u_rimFar;
 uniform float u_glareI, u_glareR, u_glareConv, u_glareFar;
 uniform float u_fresnel;
 uniform float u_contact;
+uniform float u_noInvert;
 uniform float u_shA, u_shR;
 uniform vec2  u_shOff;
 uniform float u_sat, u_bright, u_veil, u_adaptI;
@@ -417,10 +418,10 @@ vec3 shade(vec2 p, float dU, M m){
   vec3 I = vec3(0.0, 0.0, -1.0);
   vec3 R0 = refract(I, N, 1.0 / u_ior);
   vec2 d0 = R0.xy / max(-R0.z, 0.06) * depth * rs;
-  // 采样点不越过形状的中轴：保留边缘的拉伸/压缩，但不出现玻璃棒式的倒像
+  // 可选：采样点不越过形状中轴（UI 栏用，避免玻璃棒式倒像）；Siri 式厚水滴应允许倒像
   float dl = length(d0);
   float lim = max(m.inr - dIn, 0.0) * 0.9 + 0.5;
-  float dk = dl > lim ? lim / dl : 1.0;
+  float dk = (u_noInvert > 0.5 && dl > lim) ? lim / dl : 1.0;
   d0 *= dk;
 
   if (u_debug == 2) return mix(vec3(0.5), vec3(n2 * 0.5 + 0.5, 1.0), clamp(slope * 0.6, 0.0, 1.0));
@@ -447,14 +448,6 @@ vec3 shade(vec2 p, float dU, M m){
     }
   }
 
-  // ---- 接触阴影被折射进弧面：白底上形成一圈弯曲的灰色渐变（玻璃“厚度感”的关键线索）----
-  if (u_contact > 0.001) {
-    float dS = mapAll(bp + d0);
-    float band = max(u_shR * 0.5, 2.0 * u_px);
-    float cs = dS < 0.0 ? exp(dS / band) : 1.0 - smoothstep(0.0, u_shR, dS);
-    c *= 1.0 - clamp(cs * u_contact * 0.28, 0.0, 0.6);
-  }
-
   // ---- 通透感：饱和度/亮度（Vibrancy）----
   float l = luma(c);
   c = mix(vec3(l), c, u_sat) * u_bright;
@@ -479,6 +472,16 @@ vec3 shade(vec2 p, float dU, M m){
     vec3 env = bgAt(rp, max(frost * 0.6, 2.0 * u_px));
     env = mix(env, vec3(1.0), 0.12) * 1.06;
     c = mix(c, env, fa);
+  }
+
+  // ---- 接触阴影被折射进弧面：白底上形成一圈弯曲的灰色细环（在薄纱与 Fresnel 之后计算，避免被冲淡）----
+  if (u_contact > 0.001) {
+    float dS = mapAll(bp + d0);
+    float band = max(u_shR * 0.16, 2.0 * u_px);
+    float cs = dS < 0.0 ? exp(dS / band) : 1.0 - smoothstep(0.0, u_shR * 0.5, dS);
+    // 贴着几何边界的细环：边缘像素的折射采样点被推进了玻璃内部，单靠“折射的阴影”在最外沿反而最弱
+    cs = max(cs, exp(-dIn / max(band * 0.55, 1.2 * u_px)) * 0.85);
+    c *= 1.0 - clamp(cs * u_contact * 0.3, 0.0, 0.6);
   }
 
   // ---- 镜面眩光：颜色取自下方内容（OKLab 提亮 + 提纯）----
@@ -535,7 +538,7 @@ void main(){
   vec3 col = textureLod(u_bg0, uv0, 0.0).rgb;
   float dU = mapAll(p);
 
-  if (u_debug == 1) {                       // SDF 等值线视图
+  if (u_debug == 1 && u_pass == 0) {       // SDF 等值线视图（只在底层 pass 画，顶层 pass 不能覆盖它）
     vec3 base = dU > 0.0 ? vec3(0.95, 0.62, 0.32) : vec3(0.45, 0.72, 1.0);
     float k = abs(dU) / (8.0 * u_px);
     base *= 0.72 + 0.28 * smoothstep(0.35, 0.5, abs(fract(k) - 0.5) * 2.0);
