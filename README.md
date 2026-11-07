@@ -32,30 +32,30 @@ so content behind it stretches and wraps around the outline. This project solves
 | Invisible on white | The shadow under the glass is refracted into the rim → the curved grey inner ring that makes glass read as thick |
 | Fixed look | Light/dark adaptivity, Fresnel edge reflection, liquid merging, touch glow, jelly physics |
 
-<p align="center"><img src="docs/media/compare.gif" width="640" alt="Typical AI glass vs. this project"></p>
+<p align="center"><img src="docs/media/compare.webp" width="640" alt="Typical AI glass vs. this project"></p>
 
 ## Features
 
 <table>
 <tr>
-<td width="50%"><img src="docs/media/lens.gif" alt="Lens over text"><br><b>Lensing.</b> Flat clear center, magnifying rim. Text bends around the outline.</td>
-<td width="50%"><img src="docs/media/dispersion.gif" alt="Spectral dispersion"><br><b>Spectral dispersion.</b> Continuous rainbow fringes on high‑contrast edges.</td>
+<td width="50%"><img src="docs/media/lens.webp" alt="Lens over text"><br><b>Lensing.</b> Flat clear center, magnifying rim. Text bends around the outline.</td>
+<td width="50%"><img src="docs/media/dispersion.webp" alt="Spectral dispersion"><br><b>Spectral dispersion.</b> Continuous rainbow fringes on high‑contrast edges.</td>
 </tr>
 <tr>
-<td><img src="docs/media/merge.gif" alt="Liquid merging"><br><b>Liquid merging.</b> Signed distance fields blended with a smooth minimum.</td>
-<td><img src="docs/media/tabbar.gif" alt="Tab bar droplet"><br><b>Tab bar droplet.</b> The selection lifts into a magnifying lens that refracts the glass below it.</td>
+<td><img src="docs/media/merge.webp" alt="Liquid merging"><br><b>Liquid merging.</b> Signed distance fields blended with a smooth minimum.</td>
+<td><img src="docs/media/tabbar.webp" alt="Tab bar droplet"><br><b>Tab bar droplet.</b> The selection lifts into a magnifying lens that refracts the glass below it.</td>
 </tr>
 <tr>
-<td><img src="docs/media/morph.gif" alt="Shape morphing"><br><b>Morphing.</b> A button flows into a menu as one continuous surface.</td>
-<td><img src="docs/media/controls.gif" alt="Glass controls"><br><b>Glass controls.</b> Slider and switch knobs turn into clear lenses while dragged.</td>
+<td><img src="docs/media/morph.webp" alt="Shape morphing"><br><b>Morphing.</b> A button flows into a menu as one continuous surface.</td>
+<td><img src="docs/media/controls.webp" alt="Glass controls"><br><b>Glass controls.</b> Slider and switch knobs turn into clear lenses while dragged.</td>
 </tr>
 <tr>
-<td><img src="docs/media/adapt.gif" alt="Adaptivity"><br><b>Adaptivity.</b> Glass and symbols flip between light and dark to stay legible.</td>
-<td><img src="docs/media/scroll.gif" alt="Scrolling content"><br><b>Scroll under glass.</b> iOS‑style momentum, rubber banding and scroll‑edge fade.</td>
+<td><img src="docs/media/adapt.webp" alt="Adaptivity"><br><b>Adaptivity.</b> Glass and symbols flip between light and dark to stay legible.</td>
+<td><img src="docs/media/scroll.webp" alt="Scrolling content"><br><b>Scroll under glass.</b> iOS‑style momentum, rubber banding and scroll‑edge fade.</td>
 </tr>
 <tr>
-<td><img src="docs/media/looks.gif" alt="Regular, Clear, Crystal"><br><b>Three looks.</b> Apple Regular, Apple Clear and the Siri‑style Crystal on the same scene.</td>
-<td><img src="docs/media/compare.gif" alt="Comparison"><br><b>Versus “AI glass”.</b> Blur + border, then the real thing.</td>
+<td><img src="docs/media/looks.webp" alt="Regular, Clear, Crystal"><br><b>Three looks.</b> Apple Regular, Apple Clear and the Siri‑style Crystal on the same scene.</td>
+<td><img src="docs/media/compare.webp" alt="Comparison"><br><b>Versus “AI glass”.</b> Blur + border, then the real thing.</td>
 </tr>
 </table>
 
@@ -141,7 +141,7 @@ lg.add('.blob', { draggable: true, group: 1 });                // same group + m
 lg.tabbar('.tabbar', { onChange: (i) => show(i) });            // press & slide → glass droplet
 ```
 
-<p align="center"><img src="docs/media/library-drag.gif" width="640" alt="Library animation layer: drag, throw, merge, tab bar droplet"></p>
+<p align="center"><img src="docs/media/library-drag.webp" width="640" alt="Library animation layer: drag, throw, merge, tab bar droplet"></p>
 <p align="center"><sub><a href="docs/media/library-drag.mp4">MP4</a> · <a href="skills/liquid-glass/examples/drag.html">examples/drag.html</a></sub></p>
 
 **Let the library choose parameters for a scene:**

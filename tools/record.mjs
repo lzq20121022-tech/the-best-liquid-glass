@@ -245,15 +245,16 @@ console.log('frames:', frame, '→ encoding');
 const ff = (args) => execFileSync('ffmpeg', ['-y', '-loglevel', 'error', ...args], { stdio: 'inherit' });
 ff(['-framerate', String(FPS), '-i', path.join(FRAMES, 'f%05d.jpg'), '-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', path.join(MEDIA, 'demo.mp4')]);
 ff(['-i', path.join(MEDIA, 'demo.mp4'), '-vf', 'scale=1280:-2', '-c:v', 'libx264', '-crf', '26', '-preset', 'slow', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', path.join(MEDIA, 'demo-720p.mp4')]);
-const gif = (name, w = 640, fps = 15) => {
+const clip = (name, w = 640, fps = 30) => {
   const m = marks.find((x) => x.name === name);
   if (!m) return;
+  // animated WebP: 30 fps, full color, no dithering — smoother and usually smaller than GIF
   ff(['-ss', String(m.t), '-t', String(m.end - m.t), '-i', path.join(MEDIA, 'demo.mp4'),
-    '-vf', `fps=${fps},scale=${w}:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=128:stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=4:diff_mode=rectangle`,
-    path.join(MEDIA, `${name}.gif`)]);
-  console.log('gif', name);
+    '-vf', `fps=${fps},scale=${w}:-1:flags=lanczos`, '-c:v', 'libwebp_anim', '-lossless', '0', '-q:v', '72', '-compression_level', '6', '-loop', '0', '-an',
+    path.join(MEDIA, `${name}.webp`)]);
+  console.log('webp', name);
 };
-for (const n of ['scroll', 'lens', 'dispersion', 'merge', 'tabbar', 'morph', 'controls', 'adapt', 'looks', 'compare']) gif(n);
+for (const n of ['scroll', 'lens', 'dispersion', 'merge', 'tabbar', 'morph', 'controls', 'adapt', 'looks', 'compare']) clip(n);
 // poster frame
 const lensMark = marks.find((x) => x.name === 'lens');
 ff(['-ss', String(lensMark.t + 3.2), '-i', path.join(MEDIA, 'demo.mp4'), '-frames:v', '1', path.join(MEDIA, 'poster.jpg')]);

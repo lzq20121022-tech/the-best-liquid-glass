@@ -30,26 +30,26 @@ El material de Apple es una **lente**: el centro plano queda nítido mientras el
 | Capa de brillo blanco | Borde especular hacia la luz + reflexión interna en el lado opuesto, con el color del contenido (OKLab) |
 | Aspecto fijo | Adaptación claro/oscuro, reflexión de Fresnel, sombra de contacto, fusión líquida, brillo al tocar, física de gelatina |
 
-<p align="center"><img src="docs/media/compare.gif" width="640" alt="Comparación"></p>
+<p align="center"><img src="docs/media/compare.webp" width="640" alt="Comparación"></p>
 
 ## Funciones
 
 <table>
 <tr>
-<td width="50%"><img src="docs/media/lens.gif" alt="Lente"><br><b>Lente.</b> Centro nítido, borde que amplía. El texto se curva con el contorno.</td>
-<td width="50%"><img src="docs/media/dispersion.gif" alt="Dispersión"><br><b>Dispersión espectral.</b> Arcoíris continuo en bordes de alto contraste.</td>
+<td width="50%"><img src="docs/media/lens.webp" alt="Lente"><br><b>Lente.</b> Centro nítido, borde que amplía. El texto se curva con el contorno.</td>
+<td width="50%"><img src="docs/media/dispersion.webp" alt="Dispersión"><br><b>Dispersión espectral.</b> Arcoíris continuo en bordes de alto contraste.</td>
 </tr>
 <tr>
-<td><img src="docs/media/merge.gif" alt="Fusión"><br><b>Fusión líquida.</b> Campos de distancia con signo mezclados con un mínimo suave.</td>
-<td><img src="docs/media/tabbar.gif" alt="Barra de pestañas"><br><b>Gota en la barra de pestañas.</b> La selección se eleva como una lupa que refracta el vidrio de debajo.</td>
+<td><img src="docs/media/merge.webp" alt="Fusión"><br><b>Fusión líquida.</b> Campos de distancia con signo mezclados con un mínimo suave.</td>
+<td><img src="docs/media/tabbar.webp" alt="Barra de pestañas"><br><b>Gota en la barra de pestañas.</b> La selección se eleva como una lupa que refracta el vidrio de debajo.</td>
 </tr>
 <tr>
-<td><img src="docs/media/morph.gif" alt="Transformación"><br><b>Transformación.</b> Un botón fluye hasta convertirse en menú.</td>
-<td><img src="docs/media/controls.gif" alt="Controles"><br><b>Controles de vidrio.</b> Los mandos del deslizador y del interruptor se vuelven lentes al arrastrarlos.</td>
+<td><img src="docs/media/morph.webp" alt="Transformación"><br><b>Transformación.</b> Un botón fluye hasta convertirse en menú.</td>
+<td><img src="docs/media/controls.webp" alt="Controles"><br><b>Controles de vidrio.</b> Los mandos del deslizador y del interruptor se vuelven lentes al arrastrarlos.</td>
 </tr>
 <tr>
-<td><img src="docs/media/adapt.gif" alt="Adaptación"><br><b>Adaptación.</b> El vidrio y los símbolos cambian entre claro y oscuro para seguir siendo legibles.</td>
-<td><img src="docs/media/scroll.gif" alt="Desplazamiento"><br><b>Contenido bajo el vidrio.</b> Inercia estilo iOS, rebote y difuminado del borde de desplazamiento.</td>
+<td><img src="docs/media/adapt.webp" alt="Adaptación"><br><b>Adaptación.</b> El vidrio y los símbolos cambian entre claro y oscuro para seguir siendo legibles.</td>
+<td><img src="docs/media/scroll.webp" alt="Desplazamiento"><br><b>Contenido bajo el vidrio.</b> Inercia estilo iOS, rebote y difuminado del borde de desplazamiento.</td>
 </tr>
 </table>
 
@@ -90,7 +90,7 @@ LiquidGlass.recommend({ surface: 'photo', brightness: 0.3, busyness: 0.7, role: 
 
 **Animaciones incluidas**: escala elástica al pulsar, arrastre con muelle, estiramiento de gelatina, lanzamiento con inercia, rebote en los límites, imantado, fusión líquida y la gota de la barra de pestañas — `lg.add(el, { draggable: true })`, `lg.tabbar('.tabbar')`.
 
-<p align="center"><img src="docs/media/library-drag.gif" width="640" alt="Animaciones"></p>
+<p align="center"><img src="docs/media/library-drag.webp" width="640" alt="Animaciones"></p>
 
 Los elementos de vidrio reciben `data-lg-tone` y la variable CSS `--lg-fg`, así el texto sigue al fondo con `color: var(--lg-fg)`. Ejemplos:
 [hero (WebGL)](skills/liquid-glass/examples/hero-webgl.html) · [barra de navegación (DOM)](skills/liquid-glass/examples/navbar-dom.html) · [laboratorio de recommend()](skills/liquid-glass/examples/auto-tune.html)

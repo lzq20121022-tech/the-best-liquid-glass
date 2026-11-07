@@ -30,30 +30,30 @@
 | 白底上几乎隐形 | 玻璃脚下的阴影被折射进弧面 → 边缘内侧弯曲的灰色环，玻璃才显得“厚” |
 | 效果固定 | 明暗自适应、Fresnel 边缘反射、液体融合、触摸发光、果冻物理 |
 
-<p align="center"><img src="docs/media/compare.gif" width="640" alt="普通 AI 毛玻璃 vs 本项目"></p>
+<p align="center"><img src="docs/media/compare.webp" width="640" alt="普通 AI 毛玻璃 vs 本项目"></p>
 
 ## 功能
 
 <table>
 <tr>
-<td width="50%"><img src="docs/media/lens.gif" alt="透镜"><br><b>透镜折射。</b>中心清澈、边缘放大，文字沿轮廓弯曲。</td>
-<td width="50%"><img src="docs/media/dispersion.gif" alt="光谱色散"><br><b>光谱色散。</b>高对比边缘上出现连续的彩虹色边。</td>
+<td width="50%"><img src="docs/media/lens.webp" alt="透镜"><br><b>透镜折射。</b>中心清澈、边缘放大，文字沿轮廓弯曲。</td>
+<td width="50%"><img src="docs/media/dispersion.webp" alt="光谱色散"><br><b>光谱色散。</b>高对比边缘上出现连续的彩虹色边。</td>
 </tr>
 <tr>
-<td><img src="docs/media/merge.gif" alt="液体融合"><br><b>液体融合。</b>有符号距离场用平滑最小值混合。</td>
-<td><img src="docs/media/tabbar.gif" alt="标签栏水滴"><br><b>标签栏水滴。</b>选中项抬起成放大镜，并折射它下面那层玻璃。</td>
+<td><img src="docs/media/merge.webp" alt="液体融合"><br><b>液体融合。</b>有符号距离场用平滑最小值混合。</td>
+<td><img src="docs/media/tabbar.webp" alt="标签栏水滴"><br><b>标签栏水滴。</b>选中项抬起成放大镜，并折射它下面那层玻璃。</td>
 </tr>
 <tr>
-<td><img src="docs/media/morph.gif" alt="形变"><br><b>形状变形。</b>按钮连续地流动成菜单。</td>
-<td><img src="docs/media/controls.gif" alt="玻璃控件"><br><b>玻璃控件。</b>拖动时滑块/开关的旋钮变成透明透镜。</td>
+<td><img src="docs/media/morph.webp" alt="形变"><br><b>形状变形。</b>按钮连续地流动成菜单。</td>
+<td><img src="docs/media/controls.webp" alt="玻璃控件"><br><b>玻璃控件。</b>拖动时滑块/开关的旋钮变成透明透镜。</td>
 </tr>
 <tr>
-<td><img src="docs/media/adapt.gif" alt="明暗自适应"><br><b>明暗自适应。</b>玻璃与图标在深浅之间切换，始终清晰。</td>
-<td><img src="docs/media/scroll.gif" alt="滚动"><br><b>内容在玻璃下滚动。</b>iOS 式惯性、橡皮筋回弹与滚动边缘渐隐。</td>
+<td><img src="docs/media/adapt.webp" alt="明暗自适应"><br><b>明暗自适应。</b>玻璃与图标在深浅之间切换，始终清晰。</td>
+<td><img src="docs/media/scroll.webp" alt="滚动"><br><b>内容在玻璃下滚动。</b>iOS 式惯性、橡皮筋回弹与滚动边缘渐隐。</td>
 </tr>
 <tr>
-<td><img src="docs/media/looks.gif" alt="三种观感"><br><b>三种观感。</b>同一场景下的苹果 Regular、苹果 Clear 和 Siri 式晶体。</td>
-<td><img src="docs/media/compare.gif" alt="对比"><br><b>对比“AI 毛玻璃”。</b>先是模糊加白边，再切回真正的玻璃。</td>
+<td><img src="docs/media/looks.webp" alt="三种观感"><br><b>三种观感。</b>同一场景下的苹果 Regular、苹果 Clear 和 Siri 式晶体。</td>
+<td><img src="docs/media/compare.webp" alt="对比"><br><b>对比“AI 毛玻璃”。</b>先是模糊加白边，再切回真正的玻璃。</td>
 </tr>
 </table>
 
@@ -129,7 +129,7 @@ lg.add('.blob', { draggable: true, group: 1 });                // 同组 + merge
 lg.tabbar('.tabbar', { onChange: (i) => show(i) });            // 按住滑动 → 玻璃水滴
 ```
 
-<p align="center"><img src="docs/media/library-drag.gif" width="640" alt="库的动画层：拖动、甩出、融合、标签栏水滴"></p>
+<p align="center"><img src="docs/media/library-drag.webp" width="640" alt="库的动画层：拖动、甩出、融合、标签栏水滴"></p>
 <p align="center"><sub><a href="docs/media/library-drag.mp4">MP4</a> · <a href="skills/liquid-glass/examples/drag.html">examples/drag.html</a></sub></p>
 
 **让库根据场景自动选择参数：**

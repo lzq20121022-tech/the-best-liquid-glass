@@ -29,26 +29,26 @@ Apple の素材は**レンズ**です。平らな中央は透明なまま、湾�
 | 白いハイライトを重ねるだけ | 光源側の縁ハイライト＋反対側の内部反射、色はコンテンツから（OKLab） |
 | 固定の見た目 | ライト／ダーク適応、フレネル縁反射、接触影、液体融合、タッチ発光、ゼリー物理 |
 
-<p align="center"><img src="docs/media/compare.gif" width="640" alt="比較"></p>
+<p align="center"><img src="docs/media/compare.webp" width="640" alt="比較"></p>
 
 ## 機能
 
 <table>
 <tr>
-<td width="50%"><img src="docs/media/lens.gif" alt="レンズ"><br><b>レンズ効果。</b>中央は透明、縁は拡大。文字が輪郭に沿って曲がります。</td>
-<td width="50%"><img src="docs/media/dispersion.gif" alt="分散"><br><b>スペクトル分散。</b>高コントラストの縁に連続した虹色のフリンジ。</td>
+<td width="50%"><img src="docs/media/lens.webp" alt="レンズ"><br><b>レンズ効果。</b>中央は透明、縁は拡大。文字が輪郭に沿って曲がります。</td>
+<td width="50%"><img src="docs/media/dispersion.webp" alt="分散"><br><b>スペクトル分散。</b>高コントラストの縁に連続した虹色のフリンジ。</td>
 </tr>
 <tr>
-<td><img src="docs/media/merge.gif" alt="融合"><br><b>液体融合。</b>符号付き距離場をスムーズ最小値で合成。</td>
-<td><img src="docs/media/tabbar.gif" alt="タブバー"><br><b>タブバーの雫。</b>選択が持ち上がり、下のガラスごと拡大するレンズに。</td>
+<td><img src="docs/media/merge.webp" alt="融合"><br><b>液体融合。</b>符号付き距離場をスムーズ最小値で合成。</td>
+<td><img src="docs/media/tabbar.webp" alt="タブバー"><br><b>タブバーの雫。</b>選択が持ち上がり、下のガラスごと拡大するレンズに。</td>
 </tr>
 <tr>
-<td><img src="docs/media/morph.gif" alt="モーフィング"><br><b>モーフィング。</b>ボタンが一続きの面としてメニューに変形。</td>
-<td><img src="docs/media/controls.gif" alt="コントロール"><br><b>ガラスのコントロール。</b>ドラッグ中はスライダー／スイッチのノブが透明レンズに。</td>
+<td><img src="docs/media/morph.webp" alt="モーフィング"><br><b>モーフィング。</b>ボタンが一続きの面としてメニューに変形。</td>
+<td><img src="docs/media/controls.webp" alt="コントロール"><br><b>ガラスのコントロール。</b>ドラッグ中はスライダー／スイッチのノブが透明レンズに。</td>
 </tr>
 <tr>
-<td><img src="docs/media/adapt.gif" alt="適応"><br><b>ライト／ダーク適応。</b>常に読みやすいようガラスとアイコンが切り替わります。</td>
-<td><img src="docs/media/scroll.gif" alt="スクロール"><br><b>ガラスの下をスクロール。</b>iOS 風の慣性、ラバーバンド、スクロールエッジ。</td>
+<td><img src="docs/media/adapt.webp" alt="適応"><br><b>ライト／ダーク適応。</b>常に読みやすいようガラスとアイコンが切り替わります。</td>
+<td><img src="docs/media/scroll.webp" alt="スクロール"><br><b>ガラスの下をスクロール。</b>iOS 風の慣性、ラバーバンド、スクロールエッジ。</td>
 </tr>
 </table>
 
@@ -89,7 +89,7 @@ LiquidGlass.recommend({ surface: 'photo', brightness: 0.3, busyness: 0.7, role: 
 
 **アニメーション内蔵**：押下時のスプリング拡大、指に追従するドラッグ、ゼリーのような伸縮、慣性で投げる、境界のラバーバンド、スナップ、液体融合、タブバーの雫——`lg.add(el, { draggable: true })`、`lg.tabbar('.tabbar')`。
 
-<p align="center"><img src="docs/media/library-drag.gif" width="640" alt="アニメーション"></p>
+<p align="center"><img src="docs/media/library-drag.webp" width="640" alt="アニメーション"></p>
 
 ガラス要素には `data-lg-tone` と CSS 変数 `--lg-fg` が付くので、`color: var(--lg-fg)` で文字色が背景に追従します。サンプル：
 [ヒーロー（WebGL）](skills/liquid-glass/examples/hero-webgl.html) · [ナビバー（DOM）](skills/liquid-glass/examples/navbar-dom.html) · [recommend() プレイグラウンド](skills/liquid-glass/examples/auto-tune.html)

@@ -48,12 +48,35 @@
     snap(x, y) { this.x.snap(x); this.y.snap(y); }
   }
   /* 果冻形变：沿速度方向拉伸，停下时欠阻尼回弹 */
+  // 拉伸是轴对称的：角度差折叠到 ±90°，避免反向时方向突变
+  const easeAngle = (a, b, t) => {
+    let d = (((b - a + Math.PI) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
+    if (d > Math.PI / 2) d -= Math.PI;
+    if (d < -Math.PI / 2) d += Math.PI;
+    return a + d * t;
+  };
+  // 按住后往外拖：带阻尼的位移（越拉越难拉），上限约 16px
+  const taffy = (dx, dy, max = 16, k = 70) => {
+    const m = Math.hypot(dx, dy);
+    if (m < 0.01) return [0, 0];
+    const r = max * (1 - 1 / (m / k + 1));
+    return [(dx / m) * r, (dy / m) * r];
+  };
   class Jelly {
-    constructor(scale = 1) { this.amt = new Spring(0, 0.3, 0.38); this.ang = 0; this.scale = scale; }
-    update(vx, vy, dt) {
-      const sp = Math.hypot(vx, vy);
-      if (sp > 60) this.ang = Math.atan2(vy, vx);
-      this.amt.t = clamp(sp / 2600, 0, 0.3) * this.scale;
+    constructor(scale = 1) { this.amt = new Spring(0, 0.34, 0.46); this.ang = 0; this.scale = scale; this.vx = 0; this.vy = 0; }
+    /** vx, vy: 速度（px/s）；hold: 可选的持续位移 {x, y}（按住拉伸时保持形变） */
+    update(vx, vy, dt, hold) {
+      const a = 1 - Math.exp(-dt / 0.06);              // 低通滤波，去掉指针采样抖动
+      this.vx += (vx - this.vx) * a;
+      this.vy += (vy - this.vy) * a;
+      const sp = Math.hypot(this.vx, this.vy);
+      let target = clamp(sp / 2800, 0, 0.28), dir = sp > 40 ? Math.atan2(this.vy, this.vx) : null;
+      if (hold) {
+        const h = Math.hypot(hold.x, hold.y), ht = clamp(h / 90, 0, 0.18);
+        if (ht > target) { target = ht; dir = Math.atan2(hold.y, hold.x); }
+      }
+      if (dir !== null) this.ang = easeAngle(this.ang, dir, 1 - Math.exp(-dt / 0.045));
+      this.amt.t = target * this.scale;
       this.amt.step(dt);
     }
     get() {
@@ -320,9 +343,9 @@
     slider: { v: 0.62, kx: new Spring(0.62, 0.14, 0.82), act: new Spring(0, 0.32, 0.62), jelly: new Jelly(0.9) },
     toggle: { on: true, knob: new Spring(1, 0.36, 0.66), act: new Spring(0, 0.3, 0.62), onC: new Spring(1, 0.25, 1), jelly: new Jelly(0.9), sx: 0, k0: 0 },
     tab: { sel: 0, x: new Spring(0, 0.3, 0.72), lift: new Spring(0, 0.32, 0.6), jelly: new Jelly(1.1), pressing: false },
-    search: { press: new Spring(0, 0.3, 0.5) },
-    back: { press: new Spring(0, 0.3, 0.5) },
-    cap: { press: new Spring(0, 0.3, 0.5), morph: new Spring(0, 0.46, 0.76), open: false, hover: -1 },
+    search: { press: new Spring(0, 0.3, 0.5), pull: new Spring2(0, 0, 0.24, 0.5), jelly: new Jelly(1) },
+    back: { press: new Spring(0, 0.3, 0.5), pull: new Spring2(0, 0, 0.24, 0.5), jelly: new Jelly(1) },
+    cap: { press: new Spring(0, 0.3, 0.5), pull: new Spring2(0, 0, 0.24, 0.5), jelly: new Jelly(1), morph: new Spring(0, 0.46, 0.76), open: false, hover: -1 },
     glowA: { x: 0, y: 0, a: new Spring(0, 0.22, 1) },
     glowB: { x: 0, y: 0, a: new Spring(0, 0.22, 1) },
   };
@@ -676,13 +699,16 @@
     // 标签栏、搜索、返回
     base.push({ id: 'bar', g: 2, x: L.bar.x + L.bar.w / 2, y: L.bar.cy, w: L.bar.w, h: L.bar.h, r: 31, tint, adapt: ad('bar') });
     const ss = 1 + 0.14 * st.search.press.v;
-    base.push({ id: 'search', g: 3, x: L.search.x, y: L.search.y, w: 62 * ss, h: 62 * ss, r: 31 * ss, tint, adapt: ad('search') });
+    const srj = st.search.jelly.get();
+    base.push({ id: 'search', g: 3, x: L.search.x + st.search.pull.x.v, y: L.search.y + st.search.pull.y.v, w: 62 * ss, h: 62 * ss, r: 31 * ss, sa: srj.sa, s: srj.s, tint, adapt: ad('search') });
     const bs = 1 + 0.16 * st.back.press.v;
-    base.push({ id: 'back', g: 4, x: L.back.x, y: L.back.y, w: 44 * bs, h: 44 * bs, r: 22 * bs, tint, adapt: ad('back') });
+    const bj = st.back.jelly.get();
+    base.push({ id: 'back', g: 4, x: L.back.x + st.back.pull.x.v, y: L.back.y + st.back.pull.y.v, w: 44 * bs, h: 44 * bs, r: 22 * bs, sa: bj.sa, s: bj.s, tint, adapt: ad('back') });
     // 胶囊按钮 ↔ 菜单（形状连续变形）
     const m = st.cap.morph.v, cps = 1 + 0.1 * st.cap.press.v * (1 - clamp(m, 0, 1));
     const cw = Math.max(20, lerp(L.capRest.w, L.capOpen.w, m)), ch = Math.max(20, lerp(L.capRest.h, L.capOpen.h, m));
-    base.push({ id: 'cap', g: 5, x: L.capRight - cw / 2, y: L.capTop + ch / 2, w: cw * cps, h: ch * cps, r: lerp(22, 30, clamp(m, 0, 1)) * cps, frost: lerp(P.frost, P.frostPanel, clamp(m, 0, 1)), veil: lerp(1, 1.6, clamp(m, 0, 1)), tint, adapt: ad('cap') });
+    const cj = st.cap.jelly.get(), cpull = 1 - clamp(m, 0, 1);
+    base.push({ id: 'cap', g: 5, x: L.capRight - cw / 2 + st.cap.pull.x.v * cpull, y: L.capTop + ch / 2 + st.cap.pull.y.v * cpull, sa: cj.sa, s: cj.s * cpull, w: cw * cps, h: ch * cps, r: lerp(22, 30, clamp(m, 0, 1)) * cps, frost: lerp(P.frost, P.frostPanel, clamp(m, 0, 1)), veil: lerp(1, 1.6, clamp(m, 0, 1)), tint, adapt: ad('cap') });
     // 控制面板
     const pg = panelGeo();
     base.push({ id: 'panel', g: 6, x: pg.cx, y: pg.cy, w: pg.w, h: pg.h, r: 34, frost: P.frostPanel, veil: 1.6, tint, adapt: ad('panel') });
@@ -813,6 +839,7 @@
   }
   function setGlow(g, p, on) {
     g.x = p.x; g.y = p.y;
+    if (on) { g.sx = p.x; g.sy = p.y; }
     if (on !== undefined) g.a.t = on ? 1 : 0;
   }
 
@@ -870,7 +897,12 @@
       case 'tab': st.tab.x.t = dropClamp(p.x); setGlow(st.glowB, p); break;
       case 'drag': hit.obj.pos.set(p.x - hit.gx, p.y - hit.gy); setGlow(st.glowA, p); break;
       case 'panel': st.panel.pos.set(clamp(p.x - hit.gx, L.panelW / 2, S.W - L.panelW / 2), clamp(p.y - hit.gy, L.panelH / 2, S.H - L.panelH / 2)); break;
-      case 'search': case 'back': case 'cap': setGlow(st.glowA, p); break;
+      case 'search': case 'back': case 'cap': {
+        const [tx, ty] = taffy(p.x - ptr.start.x, p.y - ptr.start.y);
+        st[hit.type].pull.set(tx, ty);
+        setGlow(st.glowA, p);
+        break;
+      }
       case 'menu': {
         const y = L.capTop;
         const i = Math.floor((p.y - y - 10) / 48);
@@ -922,14 +954,17 @@
       }
       case 'search':
         st.search.press.t = 0;
+        st.search.pull.set(0, 0);
         if (tap) { P.dark = !P.dark; panelApi.refresh(); onChange('dark'); toast(P.dark ? tr('已切换为深色内容', 'Dark content') : tr('已切换为浅色内容', 'Light content')); }
         break;
       case 'back':
         st.back.press.t = 0;
+        st.back.pull.set(0, 0);
         if (tap) { scroll.toTop = true; scroll.v = 0; }
         break;
       case 'cap':
         st.cap.press.t = 0;
+        st.cap.pull.set(0, 0);
         if (tap) { st.cap.open = true; st.cap.morph.t = 1; st.cap.hover = -1; SPR[4].dirty = true; }
         break;
       case 'menu':
@@ -1064,6 +1099,16 @@
     tb.x.step(dt); tb.lift.step(dt);
     tb.jelly.update(tb.x.vel, 0, dt);
     st.search.press.step(dt); st.back.press.step(dt);
+    for (const b of [st.search, st.back, st.cap]) {
+      b.pull.step(dt);
+      b.jelly.update(b.pull.x.vel, b.pull.y.vel, dt, { x: b.pull.x.v, y: b.pull.y.v });
+    }
+    // 光晕平滑追随手指
+    for (const g of [st.glowA, st.glowB]) {
+      if (g.sx === undefined) { g.sx = g.x; g.sy = g.y; }
+      const k = 1 - Math.exp(-dt / 0.05);
+      g.sx += (g.x - g.sx) * k; g.sy += (g.y - g.sy) * k;
+    }
     st.cap.press.step(dt); st.cap.morph.step(dt);
     st.glowA.a.step(dt); st.glowB.a.step(dt);
     for (const id in adapt) adapt[id].sp.step(dt);
@@ -1179,7 +1224,7 @@
     gl.uniform1f(u.u_veil, P.veil);
     gl.uniform1f(u.u_adaptI, P.adapt);
     const g = pass === 0 ? st.glowA : st.glowB;
-    gl.uniform4f(u.u_glow, g.x * k, g.y * k, 70 * k, clamp(g.a.v, 0, 1.2) * 0.9);
+    gl.uniform4f(u.u_glow, (g.sx === undefined ? g.x : g.sx) * k, (g.sy === undefined ? g.y : g.sy) * k, 70 * k, clamp(g.a.v, 0, 1.2) * 0.9);
     gl.uniform1i(u.u_debug, P.debug);
     gl.uniform1i(u.u_lazy, P.lazy || S.lazyHold ? 1 : 0);
     ['u_bg0', 'u_bg1', 'u_bg2', 'u_bg3', 'u_bg4', 'u_bg5', 'u_bg6'].forEach((n, i) => gl.uniform1i(u[n], i));
@@ -1223,9 +1268,9 @@
     const m = clamp(st.cap.morph.v, 0, 1);
     const sprites = [
       [L.bar.x, L.bar.y, L.bar.w, L.bar.h, 1, 1, 0, 0],
-      [L.search.x - 31, L.search.y - 31, 62, 62, 1, 1 + 0.14 * st.search.press.v, L.search.x, L.search.y],
-      [L.back.x - 22, L.back.y - 22, 44, 44, 1, 1 + 0.16 * st.back.press.v, L.back.x, L.back.y],
-      [L.capRight - L.capRest.w, L.capTop, L.capRest.w, L.capRest.h, 1 - sstep(0, 0.3, m), 1 + 0.1 * st.cap.press.v, L.capRight - L.capRest.w / 2, L.capTop + L.capRest.h / 2],
+      [L.search.x - 31 + st.search.pull.x.v, L.search.y - 31 + st.search.pull.y.v, 62, 62, 1, 1 + 0.14 * st.search.press.v, L.search.x + st.search.pull.x.v, L.search.y + st.search.pull.y.v],
+      [L.back.x - 22 + st.back.pull.x.v, L.back.y - 22 + st.back.pull.y.v, 44, 44, 1, 1 + 0.16 * st.back.press.v, L.back.x + st.back.pull.x.v, L.back.y + st.back.pull.y.v],
+      [L.capRight - L.capRest.w + st.cap.pull.x.v, L.capTop + st.cap.pull.y.v, L.capRest.w, L.capRest.h, 1 - sstep(0, 0.3, m), 1 + 0.1 * st.cap.press.v, L.capRight - L.capRest.w / 2 + st.cap.pull.x.v, L.capTop + L.capRest.h / 2 + st.cap.pull.y.v],
       [L.capRight - L.capOpen.w, L.capTop, L.capOpen.w, L.capOpen.h, sstep(0.45, 0.95, st.cap.morph.v), 1, 0, 0],
       [pg.x, pg.y, pg.w, pg.h, 1, 1, 0, 0],
     ];

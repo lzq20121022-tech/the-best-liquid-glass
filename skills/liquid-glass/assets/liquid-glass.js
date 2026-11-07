@@ -203,12 +203,35 @@
    *          inertia, rubber-band bounds, snap points, axis lock, snap-back
    * ================================================================== */
   const emit = (el, name, detail) => el.dispatchEvent(new CustomEvent(name, { detail, bubbles: true }));
+  // stretch is axis-symmetric: fold the angle difference into ±90° so reversing never flips the axis
+  const easeAngle = (a, b, t) => {
+    let d = (((b - a + Math.PI) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
+    if (d > Math.PI / 2) d -= Math.PI;
+    if (d < -Math.PI / 2) d += Math.PI;
+    return a + d * t;
+  };
+  // press-and-pull: damped displacement (the further you pull, the harder it gets), ~16 px max
+  const taffy = (dx, dy, max = 16, k = 70) => {
+    const m = Math.hypot(dx, dy);
+    if (m < 0.01) return [0, 0];
+    const r = max * (1 - 1 / (m / k + 1));
+    return [(dx / m) * r, (dy / m) * r];
+  };
   class Jelly {
-    constructor(scale = 1) { this.amt = new Spring(0, 0.3, 0.38); this.ang = 0; this.scale = scale; }
-    update(vx, vy, dt) {
-      const sp = Math.hypot(vx, vy);
-      if (sp > 60) this.ang = Math.atan2(vy, vx);
-      this.amt.t = clamp(sp / 2600, 0, 0.3) * this.scale;
+    constructor(scale = 1) { this.amt = new Spring(0, 0.34, 0.46); this.ang = 0; this.scale = scale; this.vx = 0; this.vy = 0; }
+    /** vx, vy: velocity (px/s); hold: optional sustained displacement {x, y} (stretch while pulled) */
+    update(vx, vy, dt, hold) {
+      const a = 1 - Math.exp(-dt / 0.06);              // low-pass: removes pointer sampling jitter
+      this.vx += (vx - this.vx) * a;
+      this.vy += (vy - this.vy) * a;
+      const sp = Math.hypot(this.vx, this.vy);
+      let target = clamp(sp / 2800, 0, 0.28), dir = sp > 40 ? Math.atan2(this.vy, this.vx) : null;
+      if (hold) {
+        const h = Math.hypot(hold.x, hold.y), ht = clamp(h / 90, 0, 0.18);
+        if (ht > target) { target = ht; dir = Math.atan2(hold.y, hold.x); }
+      }
+      if (dir !== null) this.ang = easeAngle(this.ang, dir, 1 - Math.exp(-dt / 0.045));
+      this.amt.t = target * this.scale;
       this.amt.step(dt);
     }
     get() {
@@ -254,8 +277,9 @@
       if (e.button) return;
       this.pid = e.pointerId;
       this.press.t = 1;
+      this.pull0 = { x: e.clientX, y: e.clientY };
       if (this.host.glow) this.host.glow(e, true);
-      if (!this.drag) return;
+      if (!this.drag) { if (this.o.pull !== false) { retune(this.ox, 0.24, 0.5); retune(this.oy, 0.24, 0.5); } return; }
       e.preventDefault();
       try { this.el.setPointerCapture(e.pointerId); } catch (err) { /* synthetic event */ }
       this.dragging = true;
@@ -269,7 +293,13 @@
     move(e) {
       if (e.pointerId !== this.pid) return;
       if (this.host.glow) this.host.glow(e);
-      if (!this.dragging) return;
+      if (!this.dragging) {
+        if (!this.drag && this.o.pull !== false && this.pull0) {
+          const [tx, ty] = taffy(e.clientX - this.pull0.x, e.clientY - this.pull0.y);
+          this.ox.t = tx; this.oy.t = ty;
+        }
+        return;
+      }
       const now = performance.now();
       this.samples.push({ x: e.clientX, y: e.clientY, t: now });
       while (this.samples.length > 2 && now - this.samples[0].t > 90) this.samples.shift();
@@ -285,6 +315,7 @@
       this.pid = null;
       this.press.t = 0;
       if (this.host.glow) this.host.glow(e, false);
+      if (!this.drag) { this.ox.t = 0; this.oy.t = 0; }
       if (!this.dragging) return;
       this.dragging = false;
       const s = this.samples, a = s[0], b = s[s.length - 1];
@@ -334,7 +365,7 @@
     /** advances springs and writes CSS; cssJelly approximates the jelly with an axis-aligned CSS scale (DOM engine). */
     step(dt, cssJelly) {
       this.ox.step(dt); this.oy.step(dt); this.press.step(dt);
-      this.jelly.update(this.ox.vel, this.oy.vel, dt);
+      this.jelly.update(this.ox.vel, this.oy.vel, dt, this.drag ? null : { x: this.ox.v, y: this.oy.v });
       const j = this.jelly.get();
       const p = 1 + this.pressScale * this.press.v;
       let sx = p, sy = p;
@@ -718,7 +749,7 @@
       const g = layer ? this.glow1 : this.glow0;
       const r = this.canvas.getBoundingClientRect();
       g.x = e.clientX - r.left; g.y = e.clientY - r.top;
-      if (on === true) g.a.t = 1;
+      if (on === true) { g.a.t = 1; g.sx = g.x; g.sy = g.y; }
       else if (on === false) g.a.t = 0;
     }
     tabbar(target, o) {
@@ -776,6 +807,11 @@
       this._resize(); // cheap when unchanged; keeps the canvas glued to the host while scrolling
       this.time += dt;
       this.glow0.a.step(dt); this.glow1.a.step(dt);
+      for (const g of [this.glow0, this.glow1]) {
+        if (g.sx === undefined) { g.sx = g.x; g.sy = g.y; }
+        const kk = 1 - Math.exp(-dt / 0.05);
+        g.sx += (g.x - g.sx) * kk; g.sy += (g.y - g.sy) * kk;
+      }
       const k = this.px;
       if (this.bg && this.bg.live) {
         if (!(this.bg.src instanceof HTMLVideoElement) || this.bg.src.readyState >= 2) this._upload(this.bg.src);
@@ -886,7 +922,7 @@
       gl.uniform1f(u.u_noInvert, P.noInvert ? 1 : 0);
       gl.uniform1f(u.u_shA, P.shadowA); gl.uniform1f(u.u_shR, P.shadowR * k); gl.uniform2f(u.u_shOff, 0, P.shadowY * k);
       gl.uniform1f(u.u_sat, P.sat); gl.uniform1f(u.u_bright, P.bright); gl.uniform1f(u.u_veil, P.veil); gl.uniform1f(u.u_adaptI, P.adapt);
-      gl.uniform4f(u.u_glow, this.glow0.x * k, this.glow0.y * k, 70 * k, clamp(this.glow0.a.v, 0, 1.2) * 0.8);
+      gl.uniform4f(u.u_glow, this.glow0.sx * k, this.glow0.sy * k, 70 * k, clamp(this.glow0.a.v, 0, 1.2) * 0.8);
       gl.uniform1i(u.u_debug, 0); gl.uniform1i(u.u_lazy, 0);
       gl.uniform1i(u.u_nf, 0); gl.uniform1i(u.u_nsp, 0);
       this._uploadShapes(u, shapes);
@@ -896,7 +932,7 @@
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, this.A.tex);
         gl.uniform1f(u.u_shR, P.shadowR * 0.45 * k); gl.uniform2f(u.u_shOff, 0, P.shadowY * 0.4 * k);
-        gl.uniform4f(u.u_glow, this.glow1.x * k, this.glow1.y * k, 60 * k, clamp(this.glow1.a.v, 0, 1.2) * 0.35);
+        gl.uniform4f(u.u_glow, this.glow1.sx * k, this.glow1.sy * k, 60 * k, clamp(this.glow1.a.v, 0, 1.2) * 0.35);
         this._uploadShapes(u, top);
         gl.drawArrays(gl.TRIANGLES, 0, 3);
       }
@@ -1251,7 +1287,7 @@
   }
 
   return {
-    version: '1.1.0',
+    version: '1.2.0',
     create,
     recommend,
     presets: PRESETS,

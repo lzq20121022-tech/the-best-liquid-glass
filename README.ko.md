@@ -29,26 +29,26 @@ Apple의 소재는 **렌즈**입니다. 평평한 가운데는 투명하게 유�
 | 흰 하이라이트 오버레이 | 광원 쪽 림 하이라이트 + 반대쪽 내부 반사, 색은 콘텐츠에서(OKLab) |
 | 고정된 모습 | 라이트/다크 적응, 프레넬 가장자리 반사, 접촉 그림자, 액체 병합, 터치 발광, 젤리 물리 |
 
-<p align="center"><img src="docs/media/compare.gif" width="640" alt="비교"></p>
+<p align="center"><img src="docs/media/compare.webp" width="640" alt="비교"></p>
 
 ## 기능
 
 <table>
 <tr>
-<td width="50%"><img src="docs/media/lens.gif" alt="렌즈"><br><b>렌즈 효과.</b> 가운데는 투명, 가장자리는 확대. 글자가 윤곽을 따라 휩니다.</td>
-<td width="50%"><img src="docs/media/dispersion.gif" alt="분산"><br><b>스펙트럼 분산.</b> 고대비 가장자리에 연속적인 무지개 프린지.</td>
+<td width="50%"><img src="docs/media/lens.webp" alt="렌즈"><br><b>렌즈 효과.</b> 가운데는 투명, 가장자리는 확대. 글자가 윤곽을 따라 휩니다.</td>
+<td width="50%"><img src="docs/media/dispersion.webp" alt="분산"><br><b>스펙트럼 분산.</b> 고대비 가장자리에 연속적인 무지개 프린지.</td>
 </tr>
 <tr>
-<td><img src="docs/media/merge.gif" alt="병합"><br><b>액체 병합.</b> 부호 거리장을 스무스 최소값으로 합성.</td>
-<td><img src="docs/media/tabbar.gif" alt="탭 바"><br><b>탭 바 물방울.</b> 선택 항목이 떠올라 아래 유리까지 굴절시키는 렌즈가 됩니다.</td>
+<td><img src="docs/media/merge.webp" alt="병합"><br><b>액체 병합.</b> 부호 거리장을 스무스 최소값으로 합성.</td>
+<td><img src="docs/media/tabbar.webp" alt="탭 바"><br><b>탭 바 물방울.</b> 선택 항목이 떠올라 아래 유리까지 굴절시키는 렌즈가 됩니다.</td>
 </tr>
 <tr>
-<td><img src="docs/media/morph.gif" alt="모핑"><br><b>모핑.</b> 버튼이 하나의 연속된 면으로 메뉴가 됩니다.</td>
-<td><img src="docs/media/controls.gif" alt="컨트롤"><br><b>유리 컨트롤.</b> 드래그하는 동안 슬라이더/스위치 노브가 투명 렌즈로.</td>
+<td><img src="docs/media/morph.webp" alt="모핑"><br><b>모핑.</b> 버튼이 하나의 연속된 면으로 메뉴가 됩니다.</td>
+<td><img src="docs/media/controls.webp" alt="컨트롤"><br><b>유리 컨트롤.</b> 드래그하는 동안 슬라이더/스위치 노브가 투명 렌즈로.</td>
 </tr>
 <tr>
-<td><img src="docs/media/adapt.gif" alt="적응"><br><b>라이트/다크 적응.</b> 항상 읽기 쉽도록 유리와 아이콘이 전환됩니다.</td>
-<td><img src="docs/media/scroll.gif" alt="스크롤"><br><b>유리 아래 스크롤.</b> iOS식 관성, 러버밴드, 스크롤 가장자리 효과.</td>
+<td><img src="docs/media/adapt.webp" alt="적응"><br><b>라이트/다크 적응.</b> 항상 읽기 쉽도록 유리와 아이콘이 전환됩니다.</td>
+<td><img src="docs/media/scroll.webp" alt="스크롤"><br><b>유리 아래 스크롤.</b> iOS식 관성, 러버밴드, 스크롤 가장자리 효과.</td>
 </tr>
 </table>
 
@@ -89,7 +89,7 @@ LiquidGlass.recommend({ surface: 'photo', brightness: 0.3, busyness: 0.7, role: 
 
 **애니메이션 내장**: 누를 때 스프링 확대, 손가락을 따라오는 드래그, 젤리 같은 늘어남, 관성 던지기, 경계 러버밴드, 스냅, 액체 병합, 탭 바 물방울 — `lg.add(el, { draggable: true })`, `lg.tabbar('.tabbar')`.
 
-<p align="center"><img src="docs/media/library-drag.gif" width="640" alt="애니메이션"></p>
+<p align="center"><img src="docs/media/library-drag.webp" width="640" alt="애니메이션"></p>
 
 유리 요소에는 `data-lg-tone`과 CSS 변수 `--lg-fg`가 설정되므로 `color: var(--lg-fg)`로 글자색이 배경을 따라갑니다. 예제:
 [히어로(WebGL)](skills/liquid-glass/examples/hero-webgl.html) · [내비게이션 바(DOM)](skills/liquid-glass/examples/navbar-dom.html) · [recommend() 플레이그라운드](skills/liquid-glass/examples/auto-tune.html)

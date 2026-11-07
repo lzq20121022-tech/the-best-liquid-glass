@@ -29,26 +29,26 @@ Apple 的材質本質上是一片**透鏡**：平坦的中心保持清澈，彎�
 | 疊一層白色高光 | 迎光側邊緣高光 + 背光側內部反射，顏色取自下方內容（OKLab） |
 | 效果固定 | 明暗自適應、Fresnel 邊緣反射、接觸陰影、液體融合、觸控發光、果凍物理 |
 
-<p align="center"><img src="docs/media/compare.gif" width="640" alt="一般 AI 毛玻璃 vs 本專案"></p>
+<p align="center"><img src="docs/media/compare.webp" width="640" alt="一般 AI 毛玻璃 vs 本專案"></p>
 
 ## 功能
 
 <table>
 <tr>
-<td width="50%"><img src="docs/media/lens.gif" alt="透鏡"><br><b>透鏡折射。</b>中心清澈、邊緣放大，文字沿輪廓彎曲。</td>
-<td width="50%"><img src="docs/media/dispersion.gif" alt="光譜色散"><br><b>光譜色散。</b>高對比邊緣出現連續彩虹色邊。</td>
+<td width="50%"><img src="docs/media/lens.webp" alt="透鏡"><br><b>透鏡折射。</b>中心清澈、邊緣放大，文字沿輪廓彎曲。</td>
+<td width="50%"><img src="docs/media/dispersion.webp" alt="光譜色散"><br><b>光譜色散。</b>高對比邊緣出現連續彩虹色邊。</td>
 </tr>
 <tr>
-<td><img src="docs/media/merge.gif" alt="液體融合"><br><b>液體融合。</b>有號距離場以平滑最小值混合。</td>
-<td><img src="docs/media/tabbar.gif" alt="標籤列水滴"><br><b>標籤列水滴。</b>選取項抬起成放大鏡，並折射下層玻璃。</td>
+<td><img src="docs/media/merge.webp" alt="液體融合"><br><b>液體融合。</b>有號距離場以平滑最小值混合。</td>
+<td><img src="docs/media/tabbar.webp" alt="標籤列水滴"><br><b>標籤列水滴。</b>選取項抬起成放大鏡，並折射下層玻璃。</td>
 </tr>
 <tr>
-<td><img src="docs/media/morph.gif" alt="變形"><br><b>形狀變形。</b>按鈕連續流動成選單。</td>
-<td><img src="docs/media/controls.gif" alt="玻璃控制項"><br><b>玻璃控制項。</b>拖曳時滑桿／開關旋鈕變成透明透鏡。</td>
+<td><img src="docs/media/morph.webp" alt="變形"><br><b>形狀變形。</b>按鈕連續流動成選單。</td>
+<td><img src="docs/media/controls.webp" alt="玻璃控制項"><br><b>玻璃控制項。</b>拖曳時滑桿／開關旋鈕變成透明透鏡。</td>
 </tr>
 <tr>
-<td><img src="docs/media/adapt.gif" alt="明暗自適應"><br><b>明暗自適應。</b>玻璃與圖示在深淺間切換，始終清晰。</td>
-<td><img src="docs/media/scroll.gif" alt="捲動"><br><b>內容在玻璃下捲動。</b>iOS 式慣性、橡皮筋回彈與捲動邊緣漸隱。</td>
+<td><img src="docs/media/adapt.webp" alt="明暗自適應"><br><b>明暗自適應。</b>玻璃與圖示在深淺間切換，始終清晰。</td>
+<td><img src="docs/media/scroll.webp" alt="捲動"><br><b>內容在玻璃下捲動。</b>iOS 式慣性、橡皮筋回彈與捲動邊緣漸隱。</td>
 </tr>
 </table>
 
@@ -93,7 +93,7 @@ LiquidGlass.recommend({ surface: 'photo', brightness: 0.3, busyness: 0.7, role: 
 
 **內建動畫**：按壓彈性放大、彈簧跟手拖曳、果凍拉伸、放手甩出、邊界橡皮筋、吸附、液體融合與標籤列水滴——`lg.add(el, { draggable: true })`、`lg.tabbar('.tabbar')`。
 
-<p align="center"><img src="docs/media/library-drag.gif" width="640" alt="動畫"></p>
+<p align="center"><img src="docs/media/library-drag.webp" width="640" alt="動畫"></p>
 
 玻璃元素會帶有 `data-lg-tone` 與 CSS 變數 `--lg-fg`，文字寫 `color: var(--lg-fg)` 即可自動變色。範例：
 [主視覺（WebGL）](skills/liquid-glass/examples/hero-webgl.html) · [導覽列（DOM）](skills/liquid-glass/examples/navbar-dom.html) · [recommend() 調參](skills/liquid-glass/examples/auto-tune.html)。
