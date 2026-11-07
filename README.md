@@ -120,7 +120,7 @@ lg.add('.blob', { draggable: true, group: 1 });                // same group + m
 lg.tabbar('.tabbar', { onChange: (i) => show(i) });            // press & slide → glass droplet
 ```
 
-<p align="center"><img src="docs/media/library-drag.gif" width="560" alt="Library animation layer: drag, throw, merge, tab bar droplet"></p>
+<p align="center"><img src="docs/media/library-drag.gif" width="640" alt="Library animation layer: drag, throw, merge, tab bar droplet"></p>
 <p align="center"><sub><a href="docs/media/library-drag.mp4">MP4</a> · <a href="skills/liquid-glass/examples/drag.html">examples/drag.html</a></sub></p>
 
 **Let the library choose parameters for a scene:**

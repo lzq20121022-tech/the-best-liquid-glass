@@ -84,7 +84,7 @@ LiquidGlass.recommend({ surface: 'photo', brightness: 0.3, busyness: 0.7, role: 
 
 **Animaciones incluidas**: escala elástica al pulsar, arrastre con muelle, estiramiento de gelatina, lanzamiento con inercia, rebote en los límites, imantado, fusión líquida y la gota de la barra de pestañas — `lg.add(el, { draggable: true })`, `lg.tabbar('.tabbar')`.
 
-<p align="center"><img src="docs/media/library-drag.gif" width="560" alt="Animaciones"></p>
+<p align="center"><img src="docs/media/library-drag.gif" width="640" alt="Animaciones"></p>
 
 Los elementos de vidrio reciben `data-lg-tone` y la variable CSS `--lg-fg`, así el texto sigue al fondo con `color: var(--lg-fg)`. Ejemplos:
 [hero (WebGL)](skills/liquid-glass/examples/hero-webgl.html) · [barra de navegación (DOM)](skills/liquid-glass/examples/navbar-dom.html) · [laboratorio de recommend()](skills/liquid-glass/examples/auto-tune.html)

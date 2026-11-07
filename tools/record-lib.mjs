@@ -21,7 +21,7 @@ const page = await browser.newPage();
 const errs = [];
 page.on('pageerror', (e) => errs.push(String(e)));
 page.on('console', (m) => { if (m.type() === 'error') errs.push(m.text()); });
-await page.setViewport({ width: 1100, height: 680, deviceScaleFactor: 1.5 });
+await page.setViewport({ width: 1200, height: 720, deviceScaleFactor: 1.5 });
 await page.goto(BASE + '/skills/liquid-glass/examples/drag.html', { waitUntil: 'networkidle0' });
 await new Promise((r) => setTimeout(r, 800));
 
@@ -50,33 +50,43 @@ async function drag(from, pts, steps, { release = true, hold = 0 } = {}) {
 }
 const idle = async (frames) => { for (let i = 0; i < frames; i++) await shot(); };
 
-await idle(8);
-// 1. merge: drag droplet 2 into droplet 1, wiggle, pull apart
-let b1 = await center('.b1'), b2 = await center('.b2');
-await drag(b2, [[b1[0] + 70, b1[1] + 30], [b1[0] + 40, b1[1] + 50], [b2[0] + 140, b2[1] - 20]], 34);
-if (CHECK) await shot('check-merge-end.jpg');
-await idle(14);
-// 2. throw the card (fast flick) — inertia + bounds + jelly
-const card = await center('.card');
-await page.mouse.move(card[0], card[1]);
-await page.mouse.down();
-for (let i = 1; i <= 6; i++) { await page.mouse.move(card[0] - i * 34, card[1] + i * 22); await shot(); if (CHECK && i === 5) await shot('check-jelly.jpg'); }
-await page.mouse.up();
+await idle(10);
+// 1. throw the card: fast flicks, rubber band at the edge of its stage, jelly wobble
+let c = await center('.card');
+const flick = async (dx, dy) => {
+  c = await center('.card');
+  await page.mouse.move(c[0], c[1]);
+  await page.mouse.down();
+  for (let i = 1; i <= 6; i++) { await page.mouse.move(c[0] + dx * i, c[1] + dy * i); await shot(); if (CHECK && i === 5) await shot('check-jelly.jpg'); }
+  await page.mouse.up();
+};
+await flick(-26, 14);
 await idle(26);
-// 3. snap-back pill
-const pill = await center('.pill');
-await drag(pill, [[pill[0] - 260, pill[1] + 90]], 14, { release: true });
+await flick(30, -16);
+await idle(24);
+// 2. merge: push droplet 2 into droplet 1, hold, release → springs apart
+const b1 = await center('.b1'), b2 = await center('.b2');
+await drag(b2, [[b1[0] + 34, b1[1] + 6]], 26, { release: false, hold: 10 });
+if (CHECK) await shot('check-merge.jpg');
+await page.mouse.up();
+await idle(28);
+// 3. snap: knob to On, then back to Off
+let k = await center('.knob');
+await drag(k, [[k[0] + 92, k[1] + 10]], 14);
 await idle(18);
+k = await center('.knob');
+await drag(k, [[k[0] - 64, k[1]]], 12);
+await idle(16);
 // 4. tab bar droplet
 const tabs = await page.$$eval('.tabs button', (bs) => bs.map((b) => { const r = b.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; }));
 await page.mouse.move(tabs[0][0], tabs[0][1]);
 await page.mouse.down();
 await idle(6);
 if (CHECK) await shot('check-tab-lift.jpg');
-for (let i = 1; i <= 26; i++) { const t = ease(i / 26); await page.mouse.move(tabs[0][0] + (tabs[3][0] - tabs[0][0]) * t, tabs[0][1]); await shot(); }
+for (let i = 1; i <= 24; i++) { const t = ease(i / 24); await page.mouse.move(tabs[0][0] + (tabs[3][0] - tabs[0][0]) * t, tabs[0][1]); await shot(); }
 for (let i = 1; i <= 12; i++) { const t = ease(i / 12); await page.mouse.move(tabs[3][0] + (tabs[1][0] - tabs[3][0]) * t, tabs[0][1]); await shot(); }
 await page.mouse.up();
-await idle(20);
+await idle(22);
 await browser.close();
 
 console.log('frames', n, 'avg ms/frame', (times[times.length - 1] / n).toFixed(1), errs.length ? 'ERRORS: ' + errs.join(' | ') : 'no page errors');
@@ -84,7 +94,7 @@ if (!CHECK) {
   const fps = Math.round(1000 / (times[times.length - 1] / n));
   const media = path.join(root, 'docs/media');
   const ff = (a) => execFileSync('ffmpeg', ['-y', '-loglevel', 'error', ...a], { stdio: 'inherit' });
-  ff(['-framerate', String(fps), '-i', path.join(DIR, 'f%05d.jpg'), '-c:v', 'libx264', '-crf', '20', '-preset', 'slow', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-vf', 'scale=1650:-2', path.join(media, 'library-drag.mp4')]);
+  ff(['-framerate', String(fps), '-i', path.join(DIR, 'f%05d.jpg'), '-c:v', 'libx264', '-crf', '20', '-preset', 'slow', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-vf', 'scale=1800:-2', path.join(media, 'library-drag.mp4')]);
   ff(['-i', path.join(media, 'library-drag.mp4'), '-vf', `fps=${Math.min(fps, 18)},scale=640:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=160:stats_mode=diff[p];[b][p]paletteuse=dither=sierra2_4a:diff_mode=rectangle`, path.join(media, 'library-drag.gif')]);
   fs.rmSync(DIR, { recursive: true, force: true });
   console.log('wrote docs/media/library-drag.mp4 + .gif at', fps, 'fps');

@@ -2,71 +2,122 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-<title>Liquid Glass · Drag, throw, merge (animation layer)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Liquid Glass · Motion</title>
 <style>
   * { box-sizing: border-box; }
-  html, body { margin: 0; height: 100%; overflow: hidden; background: #000; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", system-ui, sans-serif; }
-  #stage { position: fixed; inset: 0; overflow: hidden; }
+  html, body { margin: 0; background: #12142e; color: #fff; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  #stage { position: relative; min-height: 100vh; display: grid; grid-template-rows: auto 1fr; padding: clamp(28px, 6vh, 56px) 24px 140px; }
   #bg { position: absolute; inset: 0; width: 100%; height: 100%; }
-  .blob { position: absolute; width: 120px; height: 120px; border-radius: 50%; }
-  .b1 { left: 14%; top: 22%; } .b2 { left: 30%; top: 46%; width: 96px; height: 96px; } .b3 { left: 20%; top: 64%; width: 80px; height: 80px; }
-  .card { position: absolute; right: 9%; top: 18%; width: 300px; padding: 22px 24px; border-radius: 30px; color: var(--lg-fg, #fff); }
-  .card h3 { margin: 0 0 6px; font-size: 20px; } .card p { margin: 0; line-height: 1.45; color: var(--lg-fg-2, rgba(255,255,255,.75)); font-size: 14px; }
-  .pill { position: absolute; right: 12%; top: 52%; padding: 16px 26px; border-radius: 999px; color: var(--lg-fg, #fff); font-weight: 600; }
-  .tabs { position: absolute; left: 50%; bottom: 26px; transform: translateX(-50%); display: flex; gap: 2px; padding: 4px; border-radius: 999px; }
-  .tabs button { border: 0; background: transparent; color: var(--lg-fg, #fff); font: 600 13px/1 inherit; padding: 16px 22px; border-radius: 999px; cursor: pointer; }
-  .tabs button.lg-selected { color: #0a84ff; }
-  .log { position: absolute; left: 16px; top: 14px; color: #fff; font: 12px/1.6 ui-monospace, Menlo, Consolas, monospace; opacity: .8; text-shadow: 0 1px 2px rgba(0,0,0,.6); pointer-events: none; white-space: pre; }
+
+  .head { text-align: center; max-width: 640px; margin: 0 auto; }
+  .eyebrow { font: 600 12px/1 ui-monospace, "SF Mono", Menlo, Consolas, monospace; letter-spacing: .14em; text-transform: uppercase; color: rgba(255, 255, 255, .55); }
+  h1 { margin: 12px 0 10px; font-size: clamp(28px, 4.2vw, 44px); line-height: 1.08; letter-spacing: -.02em; font-weight: 700; }
+  .status { margin: 0; height: 20px; font-size: 15px; color: rgba(255, 255, 255, .62); transition: color .3s; }
+  .status.hot { color: #fff; }
+
+  .stations { display: grid; grid-template-columns: repeat(3, 280px); gap: 36px; justify-content: center; align-content: center; padding-top: clamp(24px, 5vh, 48px); }
+  .station { text-align: center; }
+  .area { position: relative; height: 220px; border-radius: 30px; border: 1px solid rgba(255, 255, 255, .1); background: rgba(255, 255, 255, .025); }
+  .station h2 { margin: 18px 0 6px; font-size: 13px; letter-spacing: .14em; text-transform: uppercase; font-weight: 650; }
+  .station p { margin: 0 auto; max-width: 250px; font-size: 14px; line-height: 1.5; color: rgba(255, 255, 255, .6); }
+
+  /* throw */
+  .card { position: absolute; left: 50%; top: 50%; width: 176px; height: 112px; margin: -56px 0 0 -88px; border-radius: 28px; display: grid; place-content: center; text-align: center; color: var(--lg-fg, #fff); }
+  .card b { font-size: 17px; } .card span { font-size: 12px; color: var(--lg-fg-2, rgba(255, 255, 255, .7)); margin-top: 3px; }
+  /* merge */
+  .merge { display: flex; align-items: center; justify-content: center; gap: 56px; }
+  .blob { width: 84px; height: 84px; border-radius: 50%; }
+  /* snap */
+  .track { position: absolute; left: 50%; top: 50%; width: 184px; height: 8px; margin: -4px 0 0 -92px; border-radius: 8px; background: rgba(255, 255, 255, .16); }
+  .stops { position: absolute; left: 50%; top: calc(50% + 34px); width: 184px; margin-left: -92px; display: flex; justify-content: space-between; font-size: 12px; color: rgba(255, 255, 255, .45); }
+  .knob { position: absolute; left: calc(50% - 92px - 6px); top: 50%; width: 80px; height: 48px; margin-top: -24px; border-radius: 999px; }
+
+  .tabs { position: fixed; left: 50%; bottom: max(24px, env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 5; display: flex; gap: 2px; padding: 4px; border-radius: 999px; }
+  .tabs button { border: 0; background: transparent; color: var(--lg-fg, #fff); font: 600 14px/1 inherit; padding: 17px 22px; border-radius: 999px; cursor: pointer; }
+  .tabs button.lg-selected { color: #5eb1ff; }
+
+  @media (max-width: 980px) {
+    .stations { grid-template-columns: repeat(3, minmax(0, 260px)); gap: 20px; }
+  }
+  @media (max-width: 760px) {
+    .stations { grid-template-columns: minmax(0, 340px); gap: 34px; }
+    .area { height: 190px; }
+    .tabs button { padding: 15px 16px; font-size: 13px; }
+  }
 </style>
 </head>
 <body>
 <div id="stage">
   <canvas id="bg"></canvas>
-  <div class="blob b1"></div>
-  <div class="blob b2"></div>
-  <div class="blob b3"></div>
-  <div class="card"><h3>Throw me</h3><p>Drag and release with speed: the glass glides, rubber-bands at the edges and wobbles like jelly.</p></div>
-  <div class="pill">Snaps back</div>
+  <header class="head">
+    <div class="eyebrow">liquid-glass.js · motion</div>
+    <h1>Glass that moves like liquid</h1>
+    <p class="status" id="status">Every piece below is a spring. Drag, throw, press.</p>
+  </header>
+
+  <main class="stations">
+    <section class="station">
+      <div class="area" id="throw-area"><div class="card"><b>Throw me</b><span>inertia · rubber band</span></div></div>
+      <h2>Throw</h2>
+      <p>Release with speed: it glides, bounces off the edge of its stage and wobbles like jelly.</p>
+    </section>
+    <section class="station">
+      <div class="area merge"><div class="blob b1"></div><div class="blob b2"></div></div>
+      <h2>Merge</h2>
+      <p>Push one droplet into the other. They fuse like liquid, and spring apart when you let go.</p>
+    </section>
+    <section class="station">
+      <div class="area snap"><div class="track"></div><div class="stops"><span>Off</span><span>On</span></div><div class="knob"></div></div>
+      <h2>Snap</h2>
+      <p>Axis-locked drag that settles on the nearest stop, like the iOS switch.</p>
+    </section>
+  </main>
+
   <nav class="tabs"><button>Home</button><button>Browse</button><button>Radio</button><button>Library</button></nav>
-  <div class="log" id="log">drag the droplets together · throw the card · press &amp; slide the tab bar</div>
 </div>
 
 <script src="../assets/liquid-glass.js"></script>
 <script>
-  // A detailed background makes the refraction readable: vivid gradient, thin white waves, rings.
+  const stage = document.getElementById('stage');
   const bg = document.getElementById('bg');
+
+  // Calm background that still shows refraction: deep gradient, soft color fields, a fine dot grid.
   function paint() {
-    const W = innerWidth, H = innerHeight, k = Math.min(devicePixelRatio || 1, 2);
-    bg.width = W * k; bg.height = H * k;
+    const W = stage.clientWidth, H = stage.scrollHeight, k = Math.min(devicePixelRatio || 1, 2);
+    bg.width = Math.round(W * k); bg.height = Math.round(H * k);
     const x = bg.getContext('2d');
     x.setTransform(k, 0, 0, k, 0, 0);
     const g = x.createLinearGradient(0, 0, W, H);
-    g.addColorStop(0, '#ff6a88'); g.addColorStop(0.35, '#ffb347'); g.addColorStop(0.65, '#5f7bff'); g.addColorStop(1, '#14d3c2');
+    g.addColorStop(0, '#151a3c'); g.addColorStop(0.55, '#2b1752'); g.addColorStop(1, '#0c3450');
     x.fillStyle = g; x.fillRect(0, 0, W, H);
-    x.strokeStyle = 'rgba(255,255,255,.8)'; x.lineWidth = 2;
-    for (let i = 0; i < 14; i++) {
-      x.beginPath();
-      for (let px = 0; px <= W; px += 8) { const y = (i + 0.5) * H / 14 + Math.sin(px / 90 + i) * 14; px ? x.lineTo(px, y) : x.moveTo(px, y); }
-      x.stroke();
+    for (const [cx, cy, r, c] of [[0.18, 0.3, 0.42, '255,92,150'], [0.82, 0.28, 0.4, '84,140,255'], [0.5, 0.78, 0.45, '36,214,196'], [0.62, 0.48, 0.25, '255,170,80']]) {
+      const rg = x.createRadialGradient(W * cx, H * cy, 0, W * cx, H * cy, Math.max(W, H) * r);
+      rg.addColorStop(0, `rgba(${c},.42)`); rg.addColorStop(1, `rgba(${c},0)`);
+      x.fillStyle = rg; x.fillRect(0, 0, W, H);
     }
-    x.strokeStyle = 'rgba(0,0,0,.25)'; x.lineWidth = 2;
-    for (let r = 30; r < Math.max(W, H); r += 46) { x.beginPath(); x.arc(W * 0.55, H * 0.5, r, 0, 7); x.stroke(); }
+    x.fillStyle = 'rgba(255,255,255,.22)';
+    for (let yy = 12; yy < H; yy += 24) for (let xx = 12; xx < W; xx += 24) { x.beginPath(); x.arc(xx, yy, 1.3, 0, 7); x.fill(); }
   }
   paint();
 
-  const lg = LiquidGlass.create({ background: bg, container: '#stage', liveBackground: false, params: { mergeK: 64 } });
+  const lg = LiquidGlass.create({ background: bg, container: stage, liveBackground: false, params: { mergeK: 54 } });
 
-  // Same group → they merge like liquid when they touch.
-  lg.add('.blob', { draggable: true, group: 1, frost: 0, zoom: 1.08 });
-  lg.add('.card', { draggable: { inertia: true }, frost: 6 });
-  lg.add('.pill', { draggable: { snapBack: true } });
-  lg.tabbar('.tabs', { selected: 0, onChange: (i) => log('tab → ' + i) });
+  lg.add('.card', { draggable: { bounds: 'parent', inertia: true }, frost: 4 });
+  lg.add('.blob', { draggable: { snapBack: true, bounds: null }, group: 1, frost: 0, zoom: 1.06 });
+  const travel = 184 + 12 - 80;  // track + overhang − knob
+  lg.add('.knob', { draggable: { axis: 'x', bounds: 'parent', snap: [{ x: 0, y: 0 }, { x: travel, y: 0 }] }, frost: 0, zoom: 1.12 });
+  lg.tabbar('.tabs', { selected: 0, glass: { frost: 5, veil: 0.14 }, onChange: (i) => say('Tab · ' + document.querySelectorAll('.tabs button')[i].textContent) });
 
-  const out = document.getElementById('log');
-  const log = (s) => { out.textContent = s; };
-  addEventListener('lg:dragend', (e) => log(`dragend  x=${e.detail.x.toFixed(0)}  y=${e.detail.y.toFixed(0)}  v=${Math.hypot(e.detail.vx, e.detail.vy).toFixed(0)} px/s`));
-  addEventListener('resize', () => { paint(); lg._engine.setBackground(bg); });
+  const status = document.getElementById('status');
+  let t = 0;
+  function say(s) { status.textContent = s; status.classList.add('hot'); clearTimeout(t); t = setTimeout(() => status.classList.remove('hot'), 1200); }
+  document.querySelector('.card').addEventListener('lg:dragend', (e) => say(`Throw · released at ${Math.round(Math.hypot(e.detail.vx, e.detail.vy))} px/s`));
+  document.querySelectorAll('.blob').forEach((b) => b.addEventListener('lg:dragend', () => say('Merge · and apart again')));
+  document.querySelector('.knob').addEventListener('lg:dragend', (e) => say('Snap · ' + (e.detail.x > travel / 2 ? 'On' : 'Off')));
+
+  let rt = 0;
+  addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { paint(); lg._engine.setBackground(bg); }, 120); });
 </script>
 </body>
 </html>

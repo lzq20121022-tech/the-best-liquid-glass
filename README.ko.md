@@ -83,7 +83,7 @@ LiquidGlass.recommend({ surface: 'photo', brightness: 0.3, busyness: 0.7, role: 
 
 **애니메이션 내장**: 누를 때 스프링 확대, 손가락을 따라오는 드래그, 젤리 같은 늘어남, 관성 던지기, 경계 러버밴드, 스냅, 액체 병합, 탭 바 물방울 — `lg.add(el, { draggable: true })`, `lg.tabbar('.tabbar')`.
 
-<p align="center"><img src="docs/media/library-drag.gif" width="560" alt="애니메이션"></p>
+<p align="center"><img src="docs/media/library-drag.gif" width="640" alt="애니메이션"></p>
 
 유리 요소에는 `data-lg-tone`과 CSS 변수 `--lg-fg`가 설정되므로 `color: var(--lg-fg)`로 글자색이 배경을 따라갑니다. 예제:
 [히어로(WebGL)](skills/liquid-glass/examples/hero-webgl.html) · [내비게이션 바(DOM)](skills/liquid-glass/examples/navbar-dom.html) · [recommend() 플레이그라운드](skills/liquid-glass/examples/auto-tune.html)

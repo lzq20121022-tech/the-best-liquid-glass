@@ -109,7 +109,7 @@ lg.add('.blob', { draggable: true, group: 1 });                // 同组 + merge
 lg.tabbar('.tabbar', { onChange: (i) => show(i) });            // 按住滑动 → 玻璃水滴
 ```
 
-<p align="center"><img src="docs/media/library-drag.gif" width="560" alt="库的动画层：拖动、甩出、融合、标签栏水滴"></p>
+<p align="center"><img src="docs/media/library-drag.gif" width="640" alt="库的动画层：拖动、甩出、融合、标签栏水滴"></p>
 <p align="center"><sub><a href="docs/media/library-drag.mp4">MP4</a> · <a href="skills/liquid-glass/examples/drag.html">examples/drag.html</a></sub></p>
 
 **让库根据场景自动选择参数：**
