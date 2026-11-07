@@ -13,7 +13,8 @@
   header nav a { color: var(--lg-fg, #111); text-decoration: none; padding: 8px 14px; border-radius: 999px; font-size: 15px; font-weight: 500; }
   .fab { position: fixed; right: 22px; bottom: 22px; z-index: 10; width: 60px; height: 60px; border-radius: 50%; border: 0; font-size: 26px; color: var(--lg-fg, #111); cursor: pointer; }
   .tabbar { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); z-index: 10; display: flex; gap: 6px; padding: 6px; border-radius: 999px; }
-  .tabbar button { border: 0; background: transparent; color: var(--lg-fg, #111); font: 600 13px/1 inherit; padding: 12px 18px; border-radius: 999px; cursor: pointer; }
+  .tabbar button { border: 0; background: transparent; color: var(--lg-fg, #111); font: 600 13px/1 inherit; padding: 14px 20px; border-radius: 999px; cursor: pointer; }
+  .tabbar button.lg-selected { color: #0a84ff; }
   main { max-width: 720px; margin: 0 auto; padding: 110px 20px 140px; }
   h1 { font-size: 48px; line-height: 1.05; letter-spacing: -0.02em; margin: 0 0 14px; }
   .img { height: 260px; border-radius: 22px; margin: 26px 0; }
@@ -48,8 +49,8 @@
 <script>
   const lg = LiquidGlass.create({ engine: 'dom', params: { frost: 1, disp: 0.08 } });
   lg.add('header', { role: 'navbar', surface: 'text' })
-    .add('.tabbar', { role: 'tabbar', surface: 'text' })
-    .add('.fab', { role: 'button', bezel: 30, thickness: 30 });
+    .add('.fab', { role: 'button', bezel: 30, thickness: 30, draggable: { bounds: 'window' } });
+  lg.tabbar('.tabbar', { glass: { surface: 'text' } });   // press & slide: the selection lifts into a glass droplet
   console.log('liquid-glass engine:', lg.engine);
 </script>
 </body>

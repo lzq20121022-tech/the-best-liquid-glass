@@ -51,6 +51,24 @@ the ones marked **per-element** can also be passed to `lg.add(el, { … })`.
 | `shadowA` / `shadowR` / `shadowY` | 0.22 / 24 / 8 | | Drop shadow opacity, softness, offset. Per-element `shadow` multiplies opacity. |
 | `mergeK` | 0 | 0–140 | Liquid merge distance (smooth-min of SDFs) for elements sharing the same `group`. |
 
+## Motion (per element, both engines)
+
+| Option | Default | Meaning |
+|---|---|---|
+| `draggable` | `false` | `true` or `{ bounds, inertia, snapBack, axis, snap }`. Spring-follow while dragging (slight lag + overshoot), jelly stretch along the velocity, throw on release. |
+| `draggable.bounds` | `'container'` | `'container'` (engine container / offset parent), `'parent'`, `'window'`, a selector or element, or `null` for none. Beyond the bounds the drag rubber-bands; the throw is clamped. |
+| `draggable.inertia` | `true` | Project the release velocity (~0.16 s) and glide there with a spring. |
+| `draggable.snapBack` | `false` | Spring back to the layout position on release. |
+| `draggable.axis` | `null` | `'x'` or `'y'` to lock movement. |
+| `draggable.snap` | `null` | Array of `{x, y}` offsets (nearest wins) or `fn({x, y, vx, vy}) → {x, y}`. |
+| `pressScale` | 0.05 (0.06 draggable) | Springy energize scale while pressed. 0 disables. |
+| `jelly` | 1 | Stretch amount multiplier (0 rigid, 1.5 very wobbly). |
+| `interactive` | `true` | Set `false` to disable press animation and glow. |
+
+`lg.tabbar(el, { items, selected, onChange, glass })` — items default to the bar's children; the selected item gets
+the class `lg-selected`; the bar emits `lg:change`. `lg.moveTo(el, x, y, animate = true)` moves a draggable element.
+Events (bubble): `lg:dragstart`, `lg:drag`, `lg:dragend` (`detail: { x, y, vx, vy }`), `lg:change` (`detail: { index }`).
+
 ## Engine options (`create`)
 
 | Option | Meaning |

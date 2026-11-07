@@ -64,7 +64,7 @@ Apple의 소재는 **렌즈**입니다. 평평한 가운데는 투명하게 유�
 
 ## 내 사이트에 적용하기
 
-라이브러리: [`dist/liquid-glass.js`](dist/liquid-glass.js) (UMD, 약 66 KB, 의존성 없음).
+라이브러리: [`dist/liquid-glass.js`](dist/liquid-glass.js) (UMD, 약 84 KB, 의존성 없음).
 
 ```html
 <img id="hero-bg" src="hero.jpg" alt="">
@@ -80,6 +80,10 @@ Apple의 소재는 **렌즈**입니다. 평평한 가운데는 투명하게 유�
 LiquidGlass.create({ engine: 'dom' }).add('header', { role: 'navbar', surface: 'text' });   // DOM 엔진(Chromium에서 실제 굴절)
 LiquidGlass.recommend({ surface: 'photo', brightness: 0.3, busyness: 0.7, role: 'navbar', size: { w: 390, h: 62 } });
 ```
+
+**애니메이션 내장**: 누를 때 스프링 확대, 손가락을 따라오는 드래그, 젤리 같은 늘어남, 관성 던지기, 경계 러버밴드, 스냅, 액체 병합, 탭 바 물방울 — `lg.add(el, { draggable: true })`, `lg.tabbar('.tabbar')`.
+
+<p align="center"><img src="docs/media/library-drag.gif" width="560" alt="애니메이션"></p>
 
 유리 요소에는 `data-lg-tone`과 CSS 변수 `--lg-fg`가 설정되므로 `color: var(--lg-fg)`로 글자색이 배경을 따라갑니다. 예제:
 [히어로(WebGL)](skills/liquid-glass/examples/hero-webgl.html) · [내비게이션 바(DOM)](skills/liquid-glass/examples/navbar-dom.html) · [recommend() 플레이그라운드](skills/liquid-glass/examples/auto-tune.html)

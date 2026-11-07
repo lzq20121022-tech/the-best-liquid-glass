@@ -189,6 +189,285 @@
     el.dataset.lgTone = tone;
     el.style.setProperty('--lg-fg', tone === 'light' ? '#0b0b0f' : '#ffffff');
     el.style.setProperty('--lg-fg-2', tone === 'light' ? 'rgba(11,11,15,.6)' : 'rgba(255,255,255,.7)');
+    el.style.setProperty('--lg-pill', tone === 'light' ? 'rgba(0,0,0,.075)' : 'rgba(255,255,255,.16)');
+  }
+
+  /* ================================================================== *
+   * Motion — the animation layer shared by both engines
+   *   press: energize (springy scale) + glow at the touch point
+   *   drag:  spring-follow, jelly stretch along the velocity, throw with
+   *          inertia, rubber-band bounds, snap points, axis lock, snap-back
+   * ================================================================== */
+  const emit = (el, name, detail) => el.dispatchEvent(new CustomEvent(name, { detail, bubbles: true }));
+  class Jelly {
+    constructor(scale = 1) { this.amt = new Spring(0, 0.3, 0.38); this.ang = 0; this.scale = scale; }
+    update(vx, vy, dt) {
+      const sp = Math.hypot(vx, vy);
+      if (sp > 60) this.ang = Math.atan2(vy, vx);
+      this.amt.t = clamp(sp / 2600, 0, 0.3) * this.scale;
+      this.amt.step(dt);
+    }
+    get() {
+      let a = this.amt.v, ang = this.ang;
+      if (a < 0) { ang += Math.PI / 2; a = -a * 0.8; }
+      return { sa: ang, s: Math.min(a, 0.45) };
+    }
+  }
+  function retune(sp, response, damping) { sp.k = (2 * Math.PI / response) ** 2; sp.c = (4 * Math.PI * damping) / response; }
+  function boundsRect(b, el, host) {
+    if (b === false || b === null) return null;
+    if (b === 'window') return { left: 0, top: 0, right: innerWidth, bottom: innerHeight };
+    let e = null;
+    if (b instanceof Element) e = b;
+    else if (b === 'parent') e = el.parentElement;
+    else if (typeof b === 'string' && b !== 'container') e = $(b);
+    else e = host || el.offsetParent || el.parentElement;
+    return e ? e.getBoundingClientRect() : null;
+  }
+
+  class Motion {
+    constructor(el, o, host) {
+      this.el = el; this.o = o; this.host = host;
+      this.ox = new Spring(0, 0.2, 0.74); this.oy = new Spring(0, 0.2, 0.74);
+      this.press = new Spring(0, 0.3, 0.55);
+      this.jelly = new Jelly(o.jelly == null ? 1 : o.jelly);
+      this.pressScale = o.pressScale == null ? (o.draggable ? 0.06 : 0.05) : o.pressScale;
+      const d = o.draggable;
+      this.drag = d ? Object.assign({ bounds: 'container', inertia: true, snapBack: false, axis: null, snap: null }, d === true ? {} : d) : null;
+      this.saved = { translate: el.style.translate, scale: el.style.scale, touchAction: el.style.touchAction, cursor: el.style.cursor, userSelect: el.style.userSelect, webkitUserSelect: el.style.webkitUserSelect };
+      if (this.drag) { el.style.touchAction = 'none'; el.style.cursor = 'grab'; el.style.userSelect = 'none'; el.style.webkitUserSelect = 'none'; }
+      this.pid = null;
+      this._down = (e) => this.down(e);
+      this._move = (e) => this.move(e);
+      this._up = (e) => this.up(e);
+      el.addEventListener('pointerdown', this._down);
+      el.addEventListener('pointermove', this._move);
+      window.addEventListener('pointerup', this._up);
+      window.addEventListener('pointercancel', this._up);
+      this.last = '';
+    }
+    down(e) {
+      if (e.button) return;
+      this.pid = e.pointerId;
+      this.press.t = 1;
+      if (this.host.glow) this.host.glow(e, true);
+      if (!this.drag) return;
+      e.preventDefault();
+      try { this.el.setPointerCapture(e.pointerId); } catch (err) { /* synthetic event */ }
+      this.dragging = true;
+      this.start = { x: e.clientX, y: e.clientY, ox: this.ox.t, oy: this.oy.t };
+      this.samples = [{ x: e.clientX, y: e.clientY, t: performance.now() }];
+      this.lim = this.limits();
+      retune(this.ox, 0.18, 0.74); retune(this.oy, 0.18, 0.74);
+      this.el.style.cursor = 'grabbing';
+      emit(this.el, 'lg:dragstart', { x: this.ox.t, y: this.oy.t });
+    }
+    move(e) {
+      if (e.pointerId !== this.pid) return;
+      if (this.host.glow) this.host.glow(e);
+      if (!this.dragging) return;
+      const now = performance.now();
+      this.samples.push({ x: e.clientX, y: e.clientY, t: now });
+      while (this.samples.length > 2 && now - this.samples[0].t > 90) this.samples.shift();
+      let tx = this.start.ox + (e.clientX - this.start.x), ty = this.start.oy + (e.clientY - this.start.y);
+      if (this.drag.axis === 'x') ty = this.start.oy;
+      if (this.drag.axis === 'y') tx = this.start.ox;
+      if (this.lim) { tx = this.rubber(tx, this.lim.minX, this.lim.maxX); ty = this.rubber(ty, this.lim.minY, this.lim.maxY); }
+      this.ox.t = tx; this.oy.t = ty;
+      emit(this.el, 'lg:drag', { x: tx, y: ty });
+    }
+    up(e) {
+      if (e.pointerId !== this.pid) return;
+      this.pid = null;
+      this.press.t = 0;
+      if (this.host.glow) this.host.glow(e, false);
+      if (!this.dragging) return;
+      this.dragging = false;
+      const s = this.samples, a = s[0], b = s[s.length - 1];
+      const dts = Math.max(0.016, (b.t - a.t) / 1000);
+      let vx = (b.x - a.x) / dts, vy = (b.y - a.y) / dts;
+      if (performance.now() - b.t > 80) vx = vy = 0;
+      if (this.drag.axis === 'x') vy = 0;
+      if (this.drag.axis === 'y') vx = 0;
+      let tx = this.ox.t, ty = this.oy.t;
+      if (this.drag.snapBack) { tx = 0; ty = 0; }
+      else {
+        if (this.drag.inertia) { tx += vx * 0.16; ty += vy * 0.16; }
+        if (this.lim) { tx = clamp(tx, this.lim.minX, this.lim.maxX); ty = clamp(ty, this.lim.minY, this.lim.maxY); }
+        const sn = this.drag.snap;
+        if (typeof sn === 'function') { const p = sn({ x: tx, y: ty, vx, vy }); if (p) { tx = p.x; ty = p.y; } }
+        else if (Array.isArray(sn) && sn.length) {
+          let best = sn[0], bd = Infinity;
+          for (const p of sn) { const dd = Math.hypot(p.x - tx, p.y - ty); if (dd < bd) { bd = dd; best = p; } }
+          tx = best.x; ty = best.y;
+        }
+      }
+      retune(this.ox, 0.5, 0.68); retune(this.oy, 0.5, 0.68);
+      this.ox.t = tx; this.oy.t = ty;
+      this.el.style.cursor = 'grab';
+      emit(this.el, 'lg:dragend', { x: tx, y: ty, vx, vy });
+    }
+    limits() {
+      const br = boundsRect(this.drag.bounds, this.el, this.host.boundsEl);
+      if (!br) return null;
+      const r = this.el.getBoundingClientRect();
+      const lx = r.left - this.ox.v, rx = r.right - this.ox.v, ty = r.top - this.oy.v, by = r.bottom - this.oy.v;
+      return { minX: br.left - lx, maxX: Math.max(br.left - lx, br.right - rx), minY: br.top - ty, maxY: Math.max(br.top - ty, br.bottom - by) };
+    }
+    rubber(v, lo, hi) {
+      const f = (o) => (1 - 1 / ((o * 0.5) / 300 + 1)) * 300;
+      return v < lo ? lo - f(lo - v) : v > hi ? hi + f(v - hi) : v;
+    }
+    moveTo(x, y, animate = true) {
+      this.ox.t = x; this.oy.t = y;
+      if (!animate) { this.ox.v = x; this.oy.v = y; this.ox.vel = 0; this.oy.vel = 0; }
+    }
+    get busy() {
+      return this.dragging || Math.abs(this.ox.vel) + Math.abs(this.oy.vel) > 0.5 ||
+        Math.abs(this.ox.t - this.ox.v) + Math.abs(this.oy.t - this.oy.v) > 0.05 ||
+        Math.abs(this.press.t - this.press.v) > 0.002 || Math.abs(this.press.vel) > 0.01 || Math.abs(this.jelly.amt.v) > 0.002;
+    }
+    /** advances springs and writes CSS; cssJelly approximates the jelly with an axis-aligned CSS scale (DOM engine). */
+    step(dt, cssJelly) {
+      this.ox.step(dt); this.oy.step(dt); this.press.step(dt);
+      this.jelly.update(this.ox.vel, this.oy.vel, dt);
+      const j = this.jelly.get();
+      const p = 1 + this.pressScale * this.press.v;
+      let sx = p, sy = p;
+      if (cssJelly && j.s > 0.001) {
+        const su = 1 + j.s, sv = 1 / Math.sqrt(su), c = Math.cos(j.sa) ** 2, s = 1 - c;
+        sx *= su * c + sv * s; sy *= su * s + sv * c;
+      }
+      const key = this.ox.v.toFixed(2) + ',' + this.oy.v.toFixed(2) + ',' + sx.toFixed(4) + ',' + sy.toFixed(4);
+      if (key !== this.last) {
+        this.last = key;
+        this.el.style.translate = Math.abs(this.ox.v) + Math.abs(this.oy.v) < 0.01 ? this.saved.translate : this.ox.v + 'px ' + this.oy.v + 'px';
+        this.el.style.scale = Math.abs(sx - 1) + Math.abs(sy - 1) < 0.0005 ? this.saved.scale : sx + ' ' + sy;
+      }
+      return j;
+    }
+    destroy() {
+      this.el.removeEventListener('pointerdown', this._down);
+      this.el.removeEventListener('pointermove', this._move);
+      window.removeEventListener('pointerup', this._up);
+      window.removeEventListener('pointercancel', this._up);
+      Object.assign(this.el.style, this.saved);
+    }
+  }
+
+  /* Tab bar: a resting pill under the selected item; press & slide lifts it into a glass droplet. */
+  class TabBar {
+    constructor(bar, o, engine) {
+      this.bar = bar; this.o = o || {}; this.engine = engine;
+      const sel = this.o.items;
+      this.items = sel ? (typeof sel === 'string' ? Array.from(bar.querySelectorAll(sel)) : Array.from(sel)) : Array.from(bar.children);
+      this.sel = clamp(this.o.selected || 0, 0, Math.max(0, this.items.length - 1));
+      this.x = new Spring(0, 0.3, 0.72);
+      this.lift = new Spring(0, 0.32, 0.6);
+      this.jelly = new Jelly(1.1);
+      this.saved = { position: bar.style.position, isolation: bar.style.isolation, touchAction: bar.style.touchAction };
+      if (getComputedStyle(bar).position === 'static') bar.style.position = 'relative';
+      bar.style.isolation = 'isolate';
+      bar.style.touchAction = 'none';
+      const pill = (this.pill = document.createElement('div'));
+      pill.className = 'lg-tab-pill';
+      pill.setAttribute('aria-hidden', 'true');
+      pill.style.cssText = 'position:absolute;left:0;top:0;z-index:-1;pointer-events:none;border-radius:999px;background:var(--lg-pill,rgba(127,127,127,.16));';
+      bar.prepend(pill);
+      this.items.forEach((it, i) => {
+        it.classList.toggle('lg-selected', i === this.sel);
+        it.style.transition = (it.style.transition ? it.style.transition + ',' : '') + 'scale .35s cubic-bezier(.34,1.56,.64,1)';
+      });
+      this.pid = null;
+      this._down = (e) => this.down(e);
+      this._move = (e) => this.move(e);
+      this._up = (e) => this.up(e);
+      bar.addEventListener('pointerdown', this._down);
+      bar.addEventListener('pointermove', this._move);
+      window.addEventListener('pointerup', this._up);
+      window.addEventListener('pointercancel', this._up);
+      this.inited = false;
+    }
+    geo() {
+      const br = this.bar.getBoundingClientRect();
+      const cs = this.items.map((it) => { const r = it.getBoundingClientRect(); return { cx: r.left - br.left + r.width / 2, w: r.width }; });
+      return { br, cs };
+    }
+    nearest(x) {
+      const { cs } = this.geo();
+      let bi = 0, bd = Infinity;
+      cs.forEach((c, i) => { const d = Math.abs(c.cx - x); if (d < bd) { bd = d; bi = i; } });
+      return bi;
+    }
+    down(e) {
+      if (e.button) return;
+      this.pid = e.pointerId;
+      try { this.bar.setPointerCapture(e.pointerId); } catch (err) { /* synthetic */ }
+      const br = this.bar.getBoundingClientRect();
+      this.lift.t = 1;
+      this.x.t = this.clampX(e.clientX - br.left);
+      if (this.engine.glow) this.engine.glow(e, true, 1);
+    }
+    move(e) {
+      if (e.pointerId !== this.pid) return;
+      const br = this.bar.getBoundingClientRect();
+      this.x.t = this.clampX(e.clientX - br.left);
+      if (this.engine.glow) this.engine.glow(e, undefined, 1);
+    }
+    up(e) {
+      if (e.pointerId !== this.pid) return;
+      this.pid = null;
+      this.select(this.nearest(this.x.t));
+      this.lift.t = 0;
+      if (this.engine.glow) this.engine.glow(e, false, 1);
+    }
+    clampX(x) {
+      const { cs, br } = this.geo();
+      if (!cs.length) return x;
+      return clamp(x, cs[0].cx - 8, Math.min(br.width, cs[cs.length - 1].cx + 8));
+    }
+    select(i, animate = true) {
+      i = clamp(i, 0, this.items.length - 1);
+      const { cs } = this.geo();
+      if (cs[i]) this.x.t = cs[i].cx;
+      if (!animate) { this.x.v = this.x.t; this.x.vel = 0; }
+      if (i !== this.sel) {
+        this.sel = i;
+        this.items.forEach((it, k) => it.classList.toggle('lg-selected', k === i));
+        if (this.o.onChange) this.o.onChange(i);
+        emit(this.bar, 'lg:change', { index: i });
+      }
+    }
+    /** advances springs, positions the resting pill; returns droplet geometry relative to the bar (CSS px) */
+    step(dt) {
+      if (!this.inited) { this.inited = true; this.select(this.sel, false); }
+      if (this.pid === null && this.lift.t === 0) { const g = this.geo(); if (g.cs[this.sel]) this.x.t = g.cs[this.sel].cx; }
+      this.x.step(dt); this.lift.step(dt);
+      this.jelly.update(this.x.vel, 0, dt);
+      const { br, cs } = this.geo();
+      const iw = cs.length ? cs[Math.min(this.sel, cs.length - 1)].w : 60;
+      const lift = clamp(this.lift.v, 0, 1.25);
+      const ph = br.height - 8, pw = Math.max(iw, ph);
+      const w = lerp(pw, pw + 18, lift), h = lerp(ph, br.height + 16, lift);
+      const pa = 1 - sstep(0, 0.35, lift);
+      this.pill.style.width = pw + 'px';
+      this.pill.style.height = ph + 'px';
+      this.pill.style.translate = (this.x.v - pw / 2) + 'px ' + (br.height - ph) / 2 + 'px';
+      this.pill.style.opacity = pa.toFixed(3);
+      const under = this.nearest(this.x.v);
+      this.items.forEach((it, k) => { const s = lift > 0.3 && k === under ? '1.12' : ''; if (it.style.scale !== s) it.style.scale = s; });
+      return { br, x: this.x.v, y: br.height / 2, w, h, lift, jelly: this.jelly.get() };
+    }
+    get busy() { return this.pid !== null || Math.abs(this.x.vel) > 0.5 || Math.abs(this.x.t - this.x.v) > 0.05 || Math.abs(this.lift.v) > 0.002 || Math.abs(this.lift.vel) > 0.01 || !this.inited; }
+    destroy() {
+      this.bar.removeEventListener('pointerdown', this._down);
+      this.bar.removeEventListener('pointermove', this._move);
+      window.removeEventListener('pointerup', this._up);
+      window.removeEventListener('pointercancel', this._up);
+      this.pill.remove();
+      this.items.forEach((it) => { it.classList.remove('lg-selected'); it.style.scale = ''; });
+      Object.assign(this.bar.style, this.saved);
+    }
   }
 
   /* ================================================================== *
@@ -206,7 +485,9 @@
       this.bg = null;
       this.time = 0;
       this.visible = true;
-      this.glow = { x: 0, y: 0, a: new Spring(0, 0.22, 1) };
+      this.glow0 = { x: 0, y: 0, a: new Spring(0, 0.22, 1) };
+      this.glow1 = { x: 0, y: 0, a: new Spring(0, 0.22, 1) };
+      this.tabbars = [];
 
       const bgEl = opts.background instanceof Element ? opts.background : (typeof opts.background === 'string' && !/^(https?:|data:|blob:|\/|\.\/|\.\.\/)/.test(opts.background) && !/\.(png|jpe?g|webp|gif|avif|svg)(\?|$)/i.test(opts.background) ? $(opts.background) : null);
       this.bgEl = bgEl;
@@ -387,8 +668,9 @@
       this.cw = cw; this.ch = ch; this.px = cw / this.cssW;
       this.canvas.width = cw; this.canvas.height = ch;
       const free = (t) => { if (t) { gl.deleteTexture(t.tex); gl.deleteFramebuffer(t.fbo); } };
-      free(this.sceneT); this.lv.forEach(free);
+      free(this.sceneT); free(this.A); this.lv.forEach(free);
       this.sceneT = this._target(cw, ch);
+      this.A = this._target(cw, ch);
       this.lv = [null];
       let w = cw, h = ch;
       for (let k = 1; k <= 6; k++) { w = Math.max(1, Math.ceil(w / 2)); h = Math.max(1, Math.ceil(h / 2)); this.lv.push(this._target(w, h)); }
@@ -408,14 +690,8 @@
         el.style.webkitBackdropFilter = 'none';
         el.style.boxShadow = 'none';
         el.classList.add('lg-glass');
-        if (this.P.interactive && it.o.interactive !== false) {
-          it.onDown = (e) => { it.press.t = 1; this._glowAt(e, 1); this._pressed = it; };
-          it.onMove = (e) => { if (this._pressed === it) this._glowAt(e); };
-          it.onUp = () => { it.press.t = 0; this.glow.a.t = 0; this._pressed = null; };
-          el.addEventListener('pointerdown', it.onDown);
-          el.addEventListener('pointermove', it.onMove);
-          window.addEventListener('pointerup', it.onUp);
-          window.addEventListener('pointercancel', it.onUp);
+        if ((this.P.interactive && it.o.interactive !== false) || it.o.draggable) {
+          it.motion = new Motion(el, it.o, { glow: (e, on) => this.glow(e, on, 0), boundsEl: this.container });
         }
         this.items.push(it);
         out.push(it);
@@ -430,15 +706,29 @@
         if (!els.includes(it.el)) return true;
         Object.assign(it.el.style, it.saved);
         it.el.classList.remove('lg-glass');
-        if (it.onDown) { it.el.removeEventListener('pointerdown', it.onDown); it.el.removeEventListener('pointermove', it.onMove); window.removeEventListener('pointerup', it.onUp); window.removeEventListener('pointercancel', it.onUp); }
+        if (it.motion) it.motion.destroy();
         return false;
       });
     }
-    _glowAt(e, on) {
+    glow(e, on, layer) {
+      const g = layer ? this.glow1 : this.glow0;
       const r = this.canvas.getBoundingClientRect();
-      this.glow.x = e.clientX - r.left; this.glow.y = e.clientY - r.top;
-      if (on) this.glow.a.t = 1;
+      g.x = e.clientX - r.left; g.y = e.clientY - r.top;
+      if (on === true) g.a.t = 1;
+      else if (on === false) g.a.t = 0;
     }
+    tabbar(target, o) {
+      const bar = $(target);
+      if (!bar) return null;
+      if (!this.items.some((i) => i.el === bar)) this.add(bar, Object.assign({ role: 'tabbar', interactive: false }, (o && o.glass) || {}));
+      const it = this.items.find((i) => i.el === bar);
+      if (it && it.motion) { it.motion.destroy(); it.motion = null; }
+      const tb = new TabBar(bar, o, this);
+      tb.item = it;
+      this.tabbars.push(tb);
+      return tb;
+    }
+    item(el) { const e = $(el); return this.items.find((i) => i.el === e); }
     set(params) {
       Object.assign(this.P, params);
       this.spec = spectral(this.P);
@@ -481,7 +771,7 @@
       if (this._dirtySize) { this._dirtySize = false; this._resize(); }
       this._resize(); // cheap when unchanged; keeps the canvas glued to the host while scrolling
       this.time += dt;
-      this.glow.a.step(dt);
+      this.glow0.a.step(dt); this.glow1.a.step(dt);
       const k = this.px;
       if (this.bg && this.bg.live) {
         if (!(this.bg.src instanceof HTMLVideoElement) || this.bg.src.readyState >= 2) this._upload(this.bg.src);
@@ -493,7 +783,8 @@
       const cr = this.canvas.getBoundingClientRect();
       const shapes = [];
       for (const it of this.items) {
-        it.press.step(dt); it.adapt.step(dt);
+        it.adapt.step(dt);
+        const jl = it.motion ? it.motion.step(dt, false) : null;
         const r = it.el.getBoundingClientRect();
         if (r.width < 1 || r.height < 1) continue;
         const w = r.width, h = r.height, x = r.left - cr.left + w / 2, y = r.top - cr.top + h / 2;
@@ -512,13 +803,13 @@
           }
         }
         if (this.auto && it.rec) per = it.rec;
-        const sc = 1 + 0.04 * it.press.v;
+        const sc = 1;
         const rad = o.radius != null ? o.radius : parseRadius(it.el, w, h);
         const frost = o.frost != null ? o.frost : per.frost != null ? per.frost : P.frost;
         const bez = o.bezel != null ? o.bezel : per.bezel != null ? per.bezel : 0;
         const thick = o.thickness != null ? o.thickness / P.thickness : per.thickness != null ? per.thickness / P.thickness : 1;
         shapes.push({
-          x, y, w: w * sc, h: h * sc, r: rad * sc, g: it.group,
+          x, y, w: w * sc, h: h * sc, r: rad * sc, g: it.group, sa: jl ? jl.sa : 0, s: jl ? jl.s : 0,
           tint: o.tint ? [...hexRGB(o.tint), o.tintA == null ? 0.25 : o.tintA] : P.tintA > 0 ? [...hexRGB(P.tint), P.tintA] : [1, 1, 1, 0],
           frost, adapt: it.adapt.v, zoom: o.zoom || per.zoom || P.zoom,
           veil: (o.veil != null ? o.veil : per.veil != null ? per.veil : P.veil) / Math.max(P.veil, 1e-3),
@@ -527,6 +818,17 @@
           sh: o.shadow != null ? o.shadow : per.shadowA != null ? per.shadowA / Math.max(P.shadowA, 1e-3) : 1,
         });
       }
+
+      // ---- top layer: tab bar droplets (refract the base glass) ----
+      const top = [];
+      this.tabbars.forEach((tb, i) => {
+        const g = tb.step(dt);
+        if (g.lift < 0.004) return;
+        const bx = g.br.left - cr.left, by = g.br.top - cr.top;
+        const adapt = tb.item ? tb.item.adapt.v : 0.5;
+        top.push({ x: bx + g.x, y: by + g.y, w: g.w, h: g.h, r: g.h / 2, g: 900 + i, sa: g.jelly.sa, s: g.jelly.s, op: sstep(0, 0.3, g.lift),
+          tint: [1, 1, 1, 0], frost: 0, adapt, zoom: 1 + 0.12 * clamp(g.lift, 0, 1.2), veil: 0.3, rim: 1, bezel: 0, thick: 1, refr: 1, sh: 0.6 });
+      });
 
       // ---- 1. scene ----
       let u = this.pScene.u;
@@ -579,11 +881,20 @@
       gl.uniform1f(u.u_contact, P.contact);
       gl.uniform1f(u.u_shA, P.shadowA); gl.uniform1f(u.u_shR, P.shadowR * k); gl.uniform2f(u.u_shOff, 0, P.shadowY * k);
       gl.uniform1f(u.u_sat, P.sat); gl.uniform1f(u.u_bright, P.bright); gl.uniform1f(u.u_veil, P.veil); gl.uniform1f(u.u_adaptI, P.adapt);
-      gl.uniform4f(u.u_glow, this.glow.x * k, this.glow.y * k, 70 * k, clamp(this.glow.a.v, 0, 1.2) * 0.8);
+      gl.uniform4f(u.u_glow, this.glow0.x * k, this.glow0.y * k, 70 * k, clamp(this.glow0.a.v, 0, 1.2) * 0.8);
       gl.uniform1i(u.u_debug, 0); gl.uniform1i(u.u_lazy, 0);
       gl.uniform1i(u.u_nf, 0); gl.uniform1i(u.u_nsp, 0);
       this._uploadShapes(u, shapes);
+      if (top.length) gl.bindFramebuffer(gl.FRAMEBUFFER, this.A.fbo);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
+      if (top.length) {
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, this.A.tex);
+        gl.uniform1f(u.u_shR, P.shadowR * 0.45 * k); gl.uniform2f(u.u_shOff, 0, P.shadowY * 0.4 * k);
+        gl.uniform4f(u.u_glow, this.glow1.x * k, this.glow1.y * k, 60 * k, clamp(this.glow1.a.v, 0, 1.2) * 0.35);
+        this._uploadShapes(u, top);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+      }
     }
     _uploadShapes(u, arr) {
       const gl = this.gl, k = this.px, U = this.U, P = this.P;
@@ -595,8 +906,8 @@
         let R = r * 1.528, cn = P.cornerN;
         if (R > minHalf) { cn = lerp(P.cornerN, 2, clamp((R - minHalf) / (minHalf * 0.528 + 1e-6), 0, 1)); R = minHalf; }
         U.g0.set([s.x * k, s.y * k, hw, hh], i * 4);
-        U.g1.set([R, cn, 0, 0], i * 4);
-        U.g2.set([s.g, 1, s.sh, s.refr], i * 4);
+        U.g1.set([R, cn, s.sa || 0, s.s || 0], i * 4);
+        U.g2.set([s.g, s.op == null ? 1 : s.op, s.sh, s.refr], i * 4);
         U.m0.set(s.tint, i * 4);
         U.m1.set([s.frost * k, 0, s.adapt, s.zoom], i * 4);
         U.m2.set([s.veil, s.rim, s.bezel * k, s.thick], i * 4);
@@ -608,6 +919,8 @@
     destroy() {
       cancelAnimationFrame(this._raf);
       this._ro.disconnect(); this._io.disconnect();
+      this.tabbars.forEach((t) => t.destroy());
+      this.tabbars = [];
       this.remove(this.items.map((i) => i.el));
       this.canvas.remove();
       Object.assign(this.container.style, this._savedContainer);
@@ -749,6 +1062,16 @@
         svgEl('defs', {}, svgHost);
       }
       this._ro = new ResizeObserver((entries) => entries.forEach((e) => { const it = this.items.find((i) => i.el === e.target); if (it) this._schedule(it); }));
+      this.tabbars = [];
+      this._last = performance.now();
+      this._tick = (now) => {
+        this._raf = requestAnimationFrame(this._tick);
+        const dt = Math.min(0.05, Math.max(0.001, (now - this._last) / 1000));
+        this._last = now;
+        for (const it of this.items) if (it.motion && it.motion.busy) it.motion.step(dt, true);
+        for (const tb of this.tabbars) if (tb.busy) this._stepTab(tb, dt);
+      };
+      this._raf = requestAnimationFrame(this._tick);
     }
     _schedule(it) { clearTimeout(it.timer); it.timer = setTimeout(() => this._apply(it), 40); }
     add(target, o) {
@@ -756,13 +1079,8 @@
       for (const el of $$(target)) {
         const it = { el, o: Object.assign({}, o || {}), id: 'lg-f' + ++filterSeq, saved: { backdropFilter: el.style.backdropFilter, webkitBackdropFilter: el.style.webkitBackdropFilter, background: el.style.background, boxShadow: el.style.boxShadow, transition: el.style.transition, transform: el.style.transform } };
         el.classList.add('lg-glass');
-        if (this.P.interactive && it.o.interactive !== false) {
-          el.style.transition = (el.style.transition ? el.style.transition + ', ' : '') + 'transform .45s cubic-bezier(.34,1.56,.64,1)';
-          it.down = () => (el.style.transform = 'scale(1.04)');
-          it.up = () => (el.style.transform = it.saved.transform || '');
-          el.addEventListener('pointerdown', it.down);
-          window.addEventListener('pointerup', it.up);
-          window.addEventListener('pointercancel', it.up);
+        if ((this.P.interactive && it.o.interactive !== false) || it.o.draggable) {
+          it.motion = new Motion(el, it.o, { boundsEl: el.offsetParent || el.parentElement });
         }
         this.items.push(it);
         this._ro.observe(el);
@@ -772,7 +1090,9 @@
       return out;
     }
     _params(it) {
-      const r = it.el.getBoundingClientRect();
+      const br = it.el.getBoundingClientRect();
+      // layout size (unaffected by the press / jelly transforms, so maps are not re-baked while animating)
+      const r = { width: it.el.offsetWidth || br.width, height: it.el.offsetHeight || br.height };
       const o = it.o;
       let P = Object.assign({}, this.P);
       if (this.opts.preset === 'auto' || o.role || o.surface) {
@@ -836,6 +1156,43 @@
       el.style.webkitBackdropFilter = `url(#${it.id})`;
     }
     set(params) { Object.assign(this.P, params); this.items.forEach((it) => this._apply(it)); }
+    item(el) { const e = $(el); return this.items.find((i) => i.el === e); }
+    tabbar(target, o) {
+      const bar = $(target);
+      if (!bar) return null;
+      if (!this.items.some((i) => i.el === bar)) this.add(bar, Object.assign({ role: 'tabbar', interactive: false }, (o && o.glass) || {}));
+      const it = this.items.find((i) => i.el === bar);
+      if (it && it.motion) { it.motion.destroy(); it.motion = null; }
+      const tb = new TabBar(bar, o, this);
+      // the droplet: a glass element above the items, so it magnifies the icons beneath it
+      const drop = (tb.drop = document.createElement('div'));
+      drop.className = 'lg-tab-drop';
+      drop.setAttribute('aria-hidden', 'true');
+      drop.style.cssText = 'position:absolute;left:0;top:0;z-index:2;pointer-events:none;border-radius:999px;opacity:0;';
+      bar.appendChild(drop);
+      tb.dropSize = null;
+      this.tabbars.push(tb);
+      return tb;
+    }
+    _stepTab(tb, dt) {
+      const g = tb.step(dt);
+      const pw = g.w - 18 * clamp(tb.lift.v, 0, 1.25), ph = g.br.height - 8;
+      const W = Math.round(Math.max(pw, ph) + 18), H = Math.round(g.br.height + 16);
+      if (!tb.dropSize || tb.dropSize[0] !== W || tb.dropSize[1] !== H) {
+        tb.dropSize = [W, H];
+        tb.drop.style.width = W + 'px';
+        tb.drop.style.height = H + 'px';
+        const ex = this.items.find((i) => i.el === tb.drop);
+        if (ex) this._apply(ex);
+        else this.add(tb.drop, { interactive: false, frost: 0, veil: 0.01, shadowA: 0.12, shadowR: 14, shadowY: 4, radius: H / 2, tone: tb.bar.dataset.lgTone || pageTone(tb.bar) });
+      }
+      const su = g.w / W, sv = g.h / H;
+      const j = g.jelly;
+      const st = 1 + j.s, sq = 1 / Math.sqrt(st);
+      tb.drop.style.translate = (g.x - W / 2) + 'px ' + (g.y - H / 2) + 'px';
+      tb.drop.style.scale = (su * st) + ' ' + (sv * sq);
+      tb.drop.style.opacity = sstep(0, 0.3, g.lift).toFixed(3);
+    }
     remove(target) {
       const els = $$(target);
       this.items = this.items.filter((it) => {
@@ -844,11 +1201,17 @@
         if (it.filter) it.filter.remove();
         Object.assign(it.el.style, it.saved);
         it.el.classList.remove('lg-glass');
-        if (it.down) { it.el.removeEventListener('pointerdown', it.down); window.removeEventListener('pointerup', it.up); window.removeEventListener('pointercancel', it.up); }
+        if (it.motion) it.motion.destroy();
         return false;
       });
     }
-    destroy() { this.remove(this.items.map((i) => i.el)); this._ro.disconnect(); }
+    destroy() {
+      cancelAnimationFrame(this._raf);
+      this.tabbars.forEach((t) => { t.destroy(); t.drop.remove(); });
+      this.tabbars = [];
+      this.remove(this.items.map((i) => i.el));
+      this._ro.disconnect();
+    }
   }
 
   /* ================================================================== *
@@ -871,6 +1234,10 @@
       add(t, o) { engine.add(t, o); return api; },
       remove(t) { engine.remove(t); return api; },
       set(p) { engine.set(p); return api; },
+      /** Animated tab bar: resting pill + liquid droplet on press & slide. Returns a controller with select(i). */
+      tabbar(t, o) { return engine.tabbar(t, o); },
+      /** Programmatically move a draggable element (offset from its layout position, CSS px). */
+      moveTo(t, x, y, animate = true) { const it = engine.item(t); if (it && it.motion) it.motion.moveTo(x, y, animate); return api; },
       get params() { return engine.P; },
       destroy() { engine.destroy(); },
       _engine: engine,
@@ -879,12 +1246,13 @@
   }
 
   return {
-    version: '1.0.0',
+    version: '1.1.0',
     create,
     recommend,
     presets: PRESETS,
     defaults: DEFAULTS,
     bakeMaps,
+    Spring,
     supports: { webgl2: typeof document !== 'undefined' && !!document.createElement('canvas').getContext('webgl2'), svgBackdrop: isChromium },
   };
 });

@@ -65,7 +65,7 @@ El material de Apple es una **lente**: el centro plano queda nítido mientras el
 
 ## Úsalo en tu web
 
-Biblioteca: [`dist/liquid-glass.js`](dist/liquid-glass.js) (UMD, ~66 KB, sin dependencias).
+Biblioteca: [`dist/liquid-glass.js`](dist/liquid-glass.js) (UMD, ~84 KB, sin dependencias).
 
 ```html
 <img id="hero-bg" src="hero.jpg" alt="">
@@ -81,6 +81,10 @@ Biblioteca: [`dist/liquid-glass.js`](dist/liquid-glass.js) (UMD, ~66 KB, sin dep
 LiquidGlass.create({ engine: 'dom' }).add('header', { role: 'navbar', surface: 'text' });   // motor DOM (refracción real en Chromium)
 LiquidGlass.recommend({ surface: 'photo', brightness: 0.3, busyness: 0.7, role: 'navbar', size: { w: 390, h: 62 } });
 ```
+
+**Animaciones incluidas**: escala elástica al pulsar, arrastre con muelle, estiramiento de gelatina, lanzamiento con inercia, rebote en los límites, imantado, fusión líquida y la gota de la barra de pestañas — `lg.add(el, { draggable: true })`, `lg.tabbar('.tabbar')`.
+
+<p align="center"><img src="docs/media/library-drag.gif" width="560" alt="Animaciones"></p>
 
 Los elementos de vidrio reciben `data-lg-tone` y la variable CSS `--lg-fg`, así el texto sigue al fondo con `color: var(--lg-fg)`. Ejemplos:
 [hero (WebGL)](skills/liquid-glass/examples/hero-webgl.html) · [barra de navegación (DOM)](skills/liquid-glass/examples/navbar-dom.html) · [laboratorio de recommend()](skills/liquid-glass/examples/auto-tune.html)

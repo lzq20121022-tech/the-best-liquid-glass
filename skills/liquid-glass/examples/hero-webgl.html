@@ -41,14 +41,7 @@
   lg.add('.nav', { role: 'navbar' })
     .add('.card', { role: 'card' })
     .add('.btn', { role: 'button' })
-    .add('.lens', { role: 'lens', emphasis: 'showcase' });
-
-  // drag the lens
-  const lens = document.querySelector('.lens');
-  let drag = null;
-  lens.addEventListener('pointerdown', (e) => { drag = { x: e.clientX - lens.offsetLeft, y: e.clientY - lens.offsetTop }; lens.setPointerCapture(e.pointerId); });
-  lens.addEventListener('pointermove', (e) => { if (!drag) return; lens.style.left = e.clientX - drag.x + 'px'; lens.style.top = e.clientY - drag.y + 'px'; });
-  lens.addEventListener('pointerup', () => (drag = null));
+    .add('.lens', { role: 'lens', emphasis: 'showcase', draggable: true }); // spring-follow, jelly stretch, throw
 </script>
 </body>
 </html>

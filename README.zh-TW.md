@@ -68,7 +68,7 @@ Apple 的材質本質上是一片**透鏡**：平坦的中心保持清澈，彎�
 
 ## 用在你的網站
 
-函式庫：[`dist/liquid-glass.js`](dist/liquid-glass.js)（UMD，約 66 KB，無依賴）。
+函式庫：[`dist/liquid-glass.js`](dist/liquid-glass.js)（UMD，約 84 KB，無依賴）。
 
 ```html
 <img id="hero-bg" src="hero.jpg" alt="">
@@ -84,6 +84,10 @@ Apple 的材質本質上是一片**透鏡**：平坦的中心保持清澈，彎�
 LiquidGlass.create({ engine: 'dom' }).add('header', { role: 'navbar', surface: 'text' });   // DOM 引擎（Chromium 真折射）
 LiquidGlass.recommend({ surface: 'photo', brightness: 0.3, busyness: 0.7, role: 'navbar', size: { w: 390, h: 62 } });
 ```
+
+**內建動畫**：按壓彈性放大、彈簧跟手拖曳、果凍拉伸、放手甩出、邊界橡皮筋、吸附、液體融合與標籤列水滴——`lg.add(el, { draggable: true })`、`lg.tabbar('.tabbar')`。
+
+<p align="center"><img src="docs/media/library-drag.gif" width="560" alt="動畫"></p>
 
 玻璃元素會帶有 `data-lg-tone` 與 CSS 變數 `--lg-fg`，文字寫 `color: var(--lg-fg)` 即可自動變色。範例：
 [主視覺（WebGL）](skills/liquid-glass/examples/hero-webgl.html) · [導覽列（DOM）](skills/liquid-glass/examples/navbar-dom.html) · [recommend() 調參](skills/liquid-glass/examples/auto-tune.html)。

@@ -112,9 +112,30 @@ automatically with the background.
 **Frameworks:** create in `useEffect` / `onMounted`, call `lg.destroy()` on unmount. Next.js / Nuxt: client only
 (`dynamic(() => …, { ssr: false })` or `if (typeof window !== 'undefined')`).
 
-API: `create(opts) → { add(target, opts), remove(target), set(params), destroy(), engine, params }`.
+**Animation (built in, both engines).** Glass is not static in Apple's design — it energizes when pressed,
+follows the finger with a spring, stretches like jelly in the direction of motion and settles with a wobble.
+
+```js
+lg.add('.lens', { draggable: true });                                   // spring-follow + jelly + throw
+lg.add('.card', { draggable: { bounds: 'parent', inertia: true } });    // rubber-band at the bounds
+lg.add('.chip', { draggable: { snapBack: true } });                     // springs home on release
+lg.add('.knob', { draggable: { axis: 'x', snap: [{ x: 0, y: 0 }, { x: 120, y: 0 }] } });
+lg.add('.blob', { draggable: true, group: 1 });  // + params.mergeK: same group merges like liquid (WebGL)
+const tabs = lg.tabbar('.tabbar', { selected: 0, onChange: (i) => route(i) }); // press & slide → droplet
+lg.moveTo('.lens', 0, 0);                                               // animate programmatically
+el.addEventListener('lg:dragend', (e) => console.log(e.detail));        // lg:dragstart / lg:drag / lg:dragend / lg:change
+```
+
+Every interactive glass element presses with a springy scale and (WebGL) a glow from the touch point.
+In the WebGL engine the jelly stretch is applied to the glass shape in the shader, so text inside never distorts;
+the DOM engine approximates it with a CSS scale. Use `pressScale` (0 to disable) and `jelly` (0 = rigid, 1.5 = wobbly)
+per element. Tab bars get a resting pill plus a droplet that lifts above the bar, refracts it (WebGL: a second glass pass;
+DOM: a nested backdrop-filter element that magnifies the labels beneath). `LiquidGlass.Spring` is exported for your own
+animations (SwiftUI-style `response` / `damping`).
+
+API: `create(opts) → { add(target, opts), remove(target), set(params), tabbar(target, opts), moveTo(target, x, y), destroy(), engine, params }`.
 Per-element options: `role, surface, radius, frost, tint, tintA, zoom, bezel, thickness, refr, veil, rim,
-shadow, group, interactive, tone`. Elements with the same `group` merge like liquid when `mergeK > 0` (WebGL engine).
+shadow, group, interactive, tone, draggable, pressScale, jelly`. Elements with the same `group` merge like liquid when `mergeK > 0` (WebGL engine).
 
 ### 5. Verify
 
@@ -129,4 +150,4 @@ shadow, group, interactive, tone`. Elements with the same `group` merge like liq
 - `assets/liquid-glass.js` – the library (UMD; `window.LiquidGlass` or `require`).
 - `references/parameters.md` – every parameter: physical meaning, range, visual effect.
 - `references/recipes.md` – scene → parameter recipes with reasoning.
-- `examples/hero-webgl.html`, `examples/navbar-dom.html`, `examples/auto-tune.html` – runnable examples.
+- `examples/hero-webgl.html`, `examples/navbar-dom.html`, `examples/drag.html`, `examples/auto-tune.html` – runnable examples (`drag.html` shows every animation).

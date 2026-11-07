@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Liquid Glass · Drag, throw, merge (animation layer)</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #000; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", system-ui, sans-serif; }
+  #stage { position: fixed; inset: 0; overflow: hidden; }
+  #bg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .blob { position: absolute; width: 120px; height: 120px; border-radius: 50%; }
+  .b1 { left: 14%; top: 22%; } .b2 { left: 30%; top: 46%; width: 96px; height: 96px; } .b3 { left: 20%; top: 64%; width: 80px; height: 80px; }
+  .card { position: absolute; right: 9%; top: 18%; width: 300px; padding: 22px 24px; border-radius: 30px; color: var(--lg-fg, #fff); }
+  .card h3 { margin: 0 0 6px; font-size: 20px; } .card p { margin: 0; line-height: 1.45; color: var(--lg-fg-2, rgba(255,255,255,.75)); font-size: 14px; }
+  .pill { position: absolute; right: 12%; top: 52%; padding: 16px 26px; border-radius: 999px; color: var(--lg-fg, #fff); font-weight: 600; }
+  .tabs { position: absolute; left: 50%; bottom: 26px; transform: translateX(-50%); display: flex; gap: 2px; padding: 4px; border-radius: 999px; }
+  .tabs button { border: 0; background: transparent; color: var(--lg-fg, #fff); font: 600 13px/1 inherit; padding: 16px 22px; border-radius: 999px; cursor: pointer; }
+  .tabs button.lg-selected { color: #0a84ff; }
+  .log { position: absolute; left: 16px; top: 14px; color: #fff; font: 12px/1.6 ui-monospace, Menlo, Consolas, monospace; opacity: .8; text-shadow: 0 1px 2px rgba(0,0,0,.6); pointer-events: none; white-space: pre; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="bg"></canvas>
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+  <div class="card"><h3>Throw me</h3><p>Drag and release with speed: the glass glides, rubber-bands at the edges and wobbles like jelly.</p></div>
+  <div class="pill">Snaps back</div>
+  <nav class="tabs"><button>Home</button><button>Browse</button><button>Radio</button><button>Library</button></nav>
+  <div class="log" id="log">drag the droplets together · throw the card · press &amp; slide the tab bar</div>
+</div>
+
+<script src="../assets/liquid-glass.js"></script>
+<script>
+  // A detailed background makes the refraction readable: vivid gradient, thin white waves, rings.
+  const bg = document.getElementById('bg');
+  function paint() {
+    const W = innerWidth, H = innerHeight, k = Math.min(devicePixelRatio || 1, 2);
+    bg.width = W * k; bg.height = H * k;
+    const x = bg.getContext('2d');
+    x.setTransform(k, 0, 0, k, 0, 0);
+    const g = x.createLinearGradient(0, 0, W, H);
+    g.addColorStop(0, '#ff6a88'); g.addColorStop(0.35, '#ffb347'); g.addColorStop(0.65, '#5f7bff'); g.addColorStop(1, '#14d3c2');
+    x.fillStyle = g; x.fillRect(0, 0, W, H);
+    x.strokeStyle = 'rgba(255,255,255,.8)'; x.lineWidth = 2;
+    for (let i = 0; i < 14; i++) {
+      x.beginPath();
+      for (let px = 0; px <= W; px += 8) { const y = (i + 0.5) * H / 14 + Math.sin(px / 90 + i) * 14; px ? x.lineTo(px, y) : x.moveTo(px, y); }
+      x.stroke();
+    }
+    x.strokeStyle = 'rgba(0,0,0,.25)'; x.lineWidth = 2;
+    for (let r = 30; r < Math.max(W, H); r += 46) { x.beginPath(); x.arc(W * 0.55, H * 0.5, r, 0, 7); x.stroke(); }
+  }
+  paint();
+
+  const lg = LiquidGlass.create({ background: bg, container: '#stage', liveBackground: false, params: { mergeK: 64 } });
+
+  // Same group → they merge like liquid when they touch.
+  lg.add('.blob', { draggable: true, group: 1, frost: 0, zoom: 1.08 });
+  lg.add('.card', { draggable: { inertia: true }, frost: 6 });
+  lg.add('.pill', { draggable: { snapBack: true } });
+  lg.tabbar('.tabs', { selected: 0, onChange: (i) => log('tab → ' + i) });
+
+  const out = document.getElementById('log');
+  const log = (s) => { out.textContent = s; };
+  addEventListener('lg:dragend', (e) => log(`dragend  x=${e.detail.x.toFixed(0)}  y=${e.detail.y.toFixed(0)}  v=${Math.hypot(e.detail.vx, e.detail.vy).toFixed(0)} px/s`));
+  addEventListener('resize', () => { paint(); lg._engine.setBackground(bg); });
+</script>
+</body>
+</html>

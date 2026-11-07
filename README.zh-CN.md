@@ -74,7 +74,7 @@
 
 ## 用在你的网站上
 
-同一套渲染器打包成了即插即用的库：[`dist/liquid-glass.js`](dist/liquid-glass.js)（UMD，约 66 KB，无依赖）。
+同一套渲染器打包成了即插即用的库：[`dist/liquid-glass.js`](dist/liquid-glass.js)（UMD，约 84 KB，无依赖）。
 
 **玻璃在图片 / 视频 / canvas / 渐变之上（WebGL 引擎，所有现代浏览器）：**
 
@@ -100,6 +100,18 @@ const lg = LiquidGlass.create({ engine: 'dom' });
 lg.add('header', { role: 'navbar', surface: 'text' });
 ```
 
+**动画是内置的**——按压弹性放大、弹簧跟手拖动、果冻拉伸、松手甩出、边界橡皮筋、吸附、液体融合、标签栏水滴：
+
+```js
+lg.add('.lens', { draggable: true });                          // 跟手 · 拉伸 · 甩出 · 回弹
+lg.add('.chip', { draggable: { snapBack: true } });            // 松手弹回原位
+lg.add('.blob', { draggable: true, group: 1 });                // 同组 + mergeK → 像液体一样融合
+lg.tabbar('.tabbar', { onChange: (i) => show(i) });            // 按住滑动 → 玻璃水滴
+```
+
+<p align="center"><img src="docs/media/library-drag.gif" width="560" alt="库的动画层：拖动、甩出、融合、标签栏水滴"></p>
+<p align="center"><sub><a href="docs/media/library-drag.mp4">MP4</a> · <a href="skills/liquid-glass/examples/drag.html">examples/drag.html</a></sub></p>
+
 **让库根据场景自动选择参数：**
 
 ```js
@@ -110,6 +122,7 @@ LiquidGlass.recommend({ surface: 'photo', brightness: 0.3, busyness: 0.7, role: 
 玻璃元素会获得 `data-lg-tone="light|dark"` 以及 CSS 变量 `--lg-fg` / `--lg-fg-2`，里面的文字写 `color: var(--lg-fg)` 就能跟随背景自动变色。可运行示例：
 [主图（WebGL）](skills/liquid-glass/examples/hero-webgl.html) ·
 [网页上的导航栏（DOM）](skills/liquid-glass/examples/navbar-dom.html) ·
+[拖动、甩出、融合、标签栏](skills/liquid-glass/examples/drag.html) ·
 [recommend() 调参台](skills/liquid-glass/examples/auto-tune.html)。
 
 <p align="center"><img src="docs/media/example-hero.png" width="720" alt="库示例"></p>

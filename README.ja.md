@@ -64,7 +64,7 @@ Apple の素材は**レンズ**です。平らな中央は透明なまま、湾�
 
 ## 自分のサイトで使う
 
-ライブラリ：[`dist/liquid-glass.js`](dist/liquid-glass.js)（UMD、約 66 KB、依存なし）。
+ライブラリ：[`dist/liquid-glass.js`](dist/liquid-glass.js)（UMD、約 84 KB、依存なし）。
 
 ```html
 <img id="hero-bg" src="hero.jpg" alt="">
@@ -80,6 +80,10 @@ Apple の素材は**レンズ**です。平らな中央は透明なまま、湾�
 LiquidGlass.create({ engine: 'dom' }).add('header', { role: 'navbar', surface: 'text' });   // DOM エンジン（Chromium で本物の屈折）
 LiquidGlass.recommend({ surface: 'photo', brightness: 0.3, busyness: 0.7, role: 'navbar', size: { w: 390, h: 62 } });
 ```
+
+**アニメーション内蔵**：押下時のスプリング拡大、指に追従するドラッグ、ゼリーのような伸縮、慣性で投げる、境界のラバーバンド、スナップ、液体融合、タブバーの雫——`lg.add(el, { draggable: true })`、`lg.tabbar('.tabbar')`。
+
+<p align="center"><img src="docs/media/library-drag.gif" width="560" alt="アニメーション"></p>
 
 ガラス要素には `data-lg-tone` と CSS 変数 `--lg-fg` が付くので、`color: var(--lg-fg)` で文字色が背景に追従します。サンプル：
 [ヒーロー（WebGL）](skills/liquid-glass/examples/hero-webgl.html) · [ナビバー（DOM）](skills/liquid-glass/examples/navbar-dom.html) · [recommend() プレイグラウンド](skills/liquid-glass/examples/auto-tune.html)

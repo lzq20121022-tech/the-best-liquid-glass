@@ -83,7 +83,7 @@ For every pixel inside a glass shape:
 
 ## Use it on your site
 
-The same renderer ships as a drop‑in library: [`dist/liquid-glass.js`](dist/liquid-glass.js) (UMD, ~66 KB, no dependencies).
+The same renderer ships as a drop‑in library: [`dist/liquid-glass.js`](dist/liquid-glass.js) (UMD, ~84 KB, no dependencies).
 
 **Glass on an image / video / canvas / gradient (WebGL engine, every modern browser):**
 
@@ -110,6 +110,19 @@ const lg = LiquidGlass.create({ engine: 'dom' });
 lg.add('header', { role: 'navbar', surface: 'text' });
 ```
 
+**Animations are built in** — press energize, spring-follow drag, jelly stretch, throw with inertia, rubber-band bounds,
+snapping, liquid merging and the tab bar droplet:
+
+```js
+lg.add('.lens', { draggable: true });                          // follow · stretch · throw · wobble
+lg.add('.chip', { draggable: { snapBack: true } });            // springs home
+lg.add('.blob', { draggable: true, group: 1 });                // same group + mergeK → merges like liquid
+lg.tabbar('.tabbar', { onChange: (i) => show(i) });            // press & slide → glass droplet
+```
+
+<p align="center"><img src="docs/media/library-drag.gif" width="560" alt="Library animation layer: drag, throw, merge, tab bar droplet"></p>
+<p align="center"><sub><a href="docs/media/library-drag.mp4">MP4</a> · <a href="skills/liquid-glass/examples/drag.html">examples/drag.html</a></sub></p>
+
 **Let the library choose parameters for a scene:**
 
 ```js
@@ -121,6 +134,7 @@ Glass elements get `data-lg-tone="light|dark"` and the CSS variables `--lg-fg` /
 follow the background: `color: var(--lg-fg)`. Runnable examples:
 [hero (WebGL)](skills/liquid-glass/examples/hero-webgl.html) ·
 [navbar over a page (DOM)](skills/liquid-glass/examples/navbar-dom.html) ·
+[drag, throw, merge, tab bar](skills/liquid-glass/examples/drag.html) ·
 [recommend() playground](skills/liquid-glass/examples/auto-tune.html).
 
 <p align="center"><img src="docs/media/example-hero.png" width="720" alt="Library example: hero with glass navbar, card, button and lens"></p>
